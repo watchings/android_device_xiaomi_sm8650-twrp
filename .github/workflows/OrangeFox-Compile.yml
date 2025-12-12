@@ -20,7 +20,7 @@ on:
       DEVICE_TREE:
         description: 'OrangeFox Device Tree'
         required: true
-        default: 'https://github.com/watchings/custom_recovery_tree_realme_nashc'
+        default: 'https://github.com/watchings/android_device_xiaomi_sm8650-twrp'
       DEVICE_TREE_BRANCH:
         description: 'OrangeFox Device Tree Branch'
         required: true
