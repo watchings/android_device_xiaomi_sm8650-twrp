@@ -61,4 +61,5 @@ on fs
     wait /sys/kernel/boot_adsp/boot
     write /sys/kernel/boot_adsp/boot 1
     wait /sys/class/power_supply/battery
+    insmod /vendor/lib/modules/synaptics_tcm2.ko
 # END Recovery_StabilityEnhance
