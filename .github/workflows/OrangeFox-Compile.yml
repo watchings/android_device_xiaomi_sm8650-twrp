@@ -12,9 +12,10 @@ on:
       MANIFEST_BRANCH:
         description: 'OrangeFox Manifest Branch'
         required: true
-        default: '12.1'
+        default: '14.1'
         type: choice
         options:
+        - 14.1
         - 12.1
         - 11.0
       DEVICE_TREE:
@@ -36,7 +37,7 @@ on:
       BUILD_TARGET:
         description: 'Specify your Build Target'
         required: true
-        default: 'recovery'
+        default: 'boot'
         type: choice
         options:
         - boot
@@ -71,7 +72,7 @@ jobs:
         sudo bash setup/android_build_env.sh
       
     - name: Set-up Manifest
-      if: inputs.MANIFEST_BRANCH == '11.0' || inputs.MANIFEST_BRANCH == '12.1'
+      if: inputs.MANIFEST_BRANCH == '11.0' || inputs.MANIFEST_BRANCH == '12.1' || inputs.MANIFEST_BRANCH == '14.1'
       run: |
         mkdir -p ${GITHUB_WORKSPACE}/OrangeFox
         cd ${GITHUB_WORKSPACE}/OrangeFox
@@ -95,7 +96,11 @@ jobs:
         source build/envsetup.sh
         export ALLOW_MISSING_DEPENDENCIES=true
         set -e
-        lunch twrp_${{ inputs.DEVICE_NAME }}-eng && make clean && mka adbd ${{ inputs.BUILD_TARGET }}image
+        if [[ ${{ inputs.MANIFEST_BRANCH }} == '14.1' ]]; then
+          lunch twrp_${{ inputs.DEVICE_NAME }}-ap2a-eng && make clean && mka adbd ${{ inputs.BUILD_TARGET }}image
+        else
+          lunch twrp_${{ inputs.DEVICE_NAME }}-eng && make clean && mka adbd ${{ inputs.BUILD_TARGET }}image
+        fi
 
     - name: Set Release Properties
       run: |
@@ -121,4 +126,3 @@ jobs:
           Build: fox_${{ inputs.MANIFEST_BRANCH }}
           Device: [Device Tree/Branch](${{ env.DEVICE_TREE_URL }}/tree/${{ inputs.DEVICE_TREE_BRANCH }})
           Commit: Most recent [commit](${{ env.DEVICE_TREE_URL }}/commit/${{ env.COMMIT_ID }}) during building.
-          
