@@ -116,7 +116,12 @@ PLATFORM_SECURITY_PATCH := 2099-12-31
 VENDOR_SECURITY_PATCH := $(PLATFORM_SECURITY_PATCH)
 BOOT_SECURITY_PATCH := $(PLATFORM_SECURITY_PATCH)
 TW_USE_KEYMINT := true
-TARGET_RECOVERY_DEVICE_MODULES += android.hardware.security.keymint-service.qti
+TARGET_RECOVERY_DEVICE_MODULES += \
+    android.hardware.security.keymint-service.qti \
+    libion \
+    libkeymasterdeviceutils \
+    libqtikeymint \
+    android.hardware.security.keymint-V3-ndk
 
 # Tool
 TW_INCLUDE_REPACKTOOLS := true
