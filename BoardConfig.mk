@@ -110,7 +110,7 @@ TARGET_RECOVERY_PIXEL_FORMAT := "RGBX_8888"
 TARGET_RECOVERY_FSTAB := $(DEVICE_PATH)/recovery/root/system/etc/recovery.fstab
 
 # Crypto
-PLATFORM_VERSION := 16
+PLATFORM_VERSION := 14
 PLATFORM_VERSION_LAST_STABLE := $(PLATFORM_VERSION)
 PLATFORM_SECURITY_PATCH := 2099-12-31
 VENDOR_SECURITY_PATCH := $(PLATFORM_SECURITY_PATCH)
@@ -124,7 +124,7 @@ TARGET_RECOVERY_DEVICE_MODULES += \
     libion \
     libkeymasterdeviceutils \
     libqtikeymint \
-    android.hardware.security.keymint-V4-ndk
+    android.hardware.security.keymint-V6-ndk
 
 # Tool
 TW_INCLUDE_REPACKTOOLS := true
