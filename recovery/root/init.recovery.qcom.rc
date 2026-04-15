@@ -61,5 +61,9 @@ on fs
     wait /sys/kernel/boot_adsp/boot
     write /sys/kernel/boot_adsp/boot 1
     wait /sys/class/power_supply/battery
+
+    # this is too weird. need to do this for the recovery to start
     insmod /vendor/lib/modules/synaptics_tcm2.ko
+    stop servicemanager
+
 # END Recovery_StabilityEnhance
