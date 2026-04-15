@@ -62,16 +62,7 @@ on fs
     write /sys/kernel/boot_adsp/boot 1
     wait /sys/class/power_supply/battery
 
-    # this is too weird. need to do this for the recovery to start
+    # this is too weird. need to do this again here to make touch screen work.
     insmod /vendor/lib/modules/synaptics_tcm2.ko
-    stop servicemanager
-    start servicemanager
-    stop servicemanager
-    start servicemanager
-    stop servicemanager
-    start servicemanager
-    stop servicemanager
-    start servicemanager
-    stop servicemanager
 
 # END Recovery_StabilityEnhance
