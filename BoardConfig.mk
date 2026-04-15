@@ -118,6 +118,7 @@ BOOT_SECURITY_PATCH := $(PLATFORM_SECURITY_PATCH)
 TW_USE_KEYMINT := true
 TW_INCLUDE_CRYPTO := true
 TW_INCLUDE_FBE := true
+TW_SKIP_INITAL_BOOT_DATA_MOUNT := true
 TARGET_RECOVERY_DEVICE_MODULES += \
     android.hardware.security.keymint-service.qti \
     libion \
