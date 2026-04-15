@@ -124,7 +124,7 @@ TARGET_RECOVERY_DEVICE_MODULES += \
     libion \
     libkeymasterdeviceutils \
     libqtikeymint \
-    android.hardware.security.keymint-V3-ndk
+    android.hardware.security.keymint-V4-ndk
 
 # Tool
 TW_INCLUDE_REPACKTOOLS := true
