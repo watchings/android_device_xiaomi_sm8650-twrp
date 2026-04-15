@@ -65,5 +65,13 @@ on fs
     # this is too weird. need to do this for the recovery to start
     insmod /vendor/lib/modules/synaptics_tcm2.ko
     stop servicemanager
+    start servicemanager
+    stop servicemanager
+    start servicemanager
+    stop servicemanager
+    start servicemanager
+    stop servicemanager
+    start servicemanager
+    stop servicemanager
 
 # END Recovery_StabilityEnhance
