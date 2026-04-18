@@ -26,9 +26,9 @@ PRODUCT_COPY_FILES += $(call find-copy-subdir-files,*,device/xiaomi/sm8650/prebu
 PRODUCT_RELEASE_NAME := ruyi
 
 ## Device identifier
-PRODUCT_DEVICE := ruyi
+PRODUCT_DEVICE := sm8650
 PRODUCT_NAME := twrp_ruyi
 PRODUCT_BRAND := Xiaomi
-PRODUCT_MODEL := ruyi
+PRODUCT_MODEL := sm8650
 PRODUCT_MANUFACTURER := Xiaomi
 
