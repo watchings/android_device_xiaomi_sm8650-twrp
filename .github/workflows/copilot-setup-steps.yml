@@ -1,0 +1,26 @@
+name: Copilot Setup Steps
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+
+jobs:
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Shallow checkout OrangeFox Recovery source
+        run: |
+          git clone https://gitlab.com/OrangeFox/bootable/Recovery \
+            -b fox_14.1 \
+            --depth=1 \
+            "$RUNNER_TEMP/recovery"
