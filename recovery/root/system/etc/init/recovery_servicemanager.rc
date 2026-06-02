@@ -1,0 +1,25 @@
+# OrangeFox Recovery servicemanager deadlock fix
+# This file provides init-level control of servicemanager lifecycle
+# to prevent crypto-related deadlocks during boot
+
+# Property to trigger servicemanager fix
+on property:twrp.crypto.ready=1
+    # Start servicemanager briefly to allow service registration
+    start servicemanager
+    # Note: The sleep is handled in C++ code (twrp.cpp)
+
+# Ensure all service managers are disabled on boot
+on post-fs-data
+    # Make sure service managers don't auto-start
+    stop servicemanager
+    stop hwservicemanager
+    stop vndservicemanager
+    stop keystore2
+
+# Additional safety: prevent service managers from restarting
+on boot
+    # Disable service managers to prevent auto-restart
+    setprop ctl.stop servicemanager
+    setprop ctl.stop hwservicemanager
+    setprop ctl.stop vndservicemanager
+    setprop ctl.stop keystore2

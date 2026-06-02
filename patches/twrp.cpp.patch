@@ -2,28 +2,44 @@ diff --git a/twrp.cpp b/twrp.cpp
 index b53417f..be8a055 100644
 --- a/twrp.cpp
 +++ b/twrp.cpp
-@@ -249,7 +249,24 @@ static void process_recovery_mode(twrpAdbBuFifo* adb_bu_fifo, bool skip_decrypti
+@@ -249,7 +249,40 @@ static void process_recovery_mode(twrpAdbBuFifo* adb_bu_fifo, bool skip_decrypti
  #endif
  
  #ifdef TW_INCLUDE_CRYPTO
 -	android::keystore::copySqliteDb();
-+	// Workaround for servicemanager deadlock with crypto enabled
-+	// Start and stop servicemanager to allow service registration without blocking
-+	LOGINFO("Starting servicemanager to prevent crypto deadlock...\n");
++	// Comprehensive workaround for servicemanager deadlock with crypto enabled
++	// This mimics the manual workaround: adb shell start servicemanager && adb shell stop servicemanager
++	LOGINFO("======================================================\n");
++	LOGINFO("Applying servicemanager deadlock fix for crypto...\n");
++	LOGINFO("======================================================\n");
++	
++	// Start servicemanager to allow service registration
++	LOGINFO("Starting servicemanager...\n");
 +	property_set("ctl.start", "servicemanager");
 +	
-+	// Give servicemanager time to start and complete any pending registrations
-+	std::this_thread::sleep_for(std::chrono::milliseconds(500));
++	// Increased wait time to ensure servicemanager fully initializes
++	// This is critical for slower devices or heavy loads
++	LOGINFO("Waiting for servicemanager initialization (1500ms)...\n");
++	std::this_thread::sleep_for(std::chrono::milliseconds(1500));
 +	
-+	// Stop servicemanager to prevent indefinite waiting
-+	LOGINFO("Stopping servicemanager after initialization...\n");
++	// Stop servicemanager to break the deadlock cycle
++	LOGINFO("Stopping servicemanager to prevent blocking...\n");
 +	property_set("ctl.stop", "servicemanager");
 +	
-+	// Brief delay to allow clean shutdown
-+	std::this_thread::sleep_for(std::chrono::milliseconds(100));
++	// Wait for clean shutdown
++	LOGINFO("Waiting for servicemanager shutdown (300ms)...\n");
++	std::this_thread::sleep_for(std::chrono::milliseconds(300));
++	
++	// Also handle hwservicemanager and vndservicemanager if they started
++	LOGINFO("Ensuring all service managers are stopped...\n");
++	property_set("ctl.stop", "hwservicemanager");
++	property_set("ctl.stop", "vndservicemanager");
++	property_set("ctl.stop", "keystore2");
++	std::this_thread::sleep_for(std::chrono::milliseconds(200));
++	
++	LOGINFO("Servicemanager deadlock fix completed.\n");
 +	
 +	// Disabled copySqliteDb() as it may trigger servicemanager dependency
-+	// This function is not critical for crypto functionality
 +	// android::keystore::copySqliteDb();
  #endif
  	Decrypt_Page(skip_decryption, datamedia);

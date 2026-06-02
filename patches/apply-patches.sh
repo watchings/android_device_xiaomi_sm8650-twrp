@@ -47,28 +47,63 @@ apply_patch() {
     
     echo -n "Applying $patch_name... "
     
+    # Check if patch applies cleanly
     if git apply --check "$patch_file" 2>/dev/null; then
-        git apply "$patch_file"
-        echo "SUCCESS"
-        return 0
+        # Apply the patch
+        if git apply "$patch_file" 2>&1; then
+            echo "SUCCESS"
+            return 0
+        else
+            echo "FAILED (apply error)"
+            git apply "$patch_file" 2>&1 | head -20
+            return 1
+        fi
     else
-        echo "SKIPPED (already applied or not applicable)"
-        return 1
+        # Check if patch is already applied
+        if git apply --check --reverse "$patch_file" 2>/dev/null; then
+            echo "SKIPPED (already applied)"
+            return 2
+        else
+            echo "FAILED (conflicts or doesn't apply)"
+            echo "Attempting to show conflicts:"
+            git apply --check "$patch_file" 2>&1 | head -20
+            return 1
+        fi
     fi
 }
 
 # Find and apply all patches in order
 patch_count=0
+failed_count=0
+skipped_count=0
+
 for patch in $(find "$PATCHES_DIR" -name "*.patch" -type f | sort); do
-    if apply_patch "$patch"; then
-        ((patch_count++))
-    fi
+    result=0
+    apply_patch "$patch"
+    result=$?
+    
+    case $result in
+        0) ((patch_count++)) ;;
+        1) ((failed_count++)) ;;
+        2) ((skipped_count++)) ;;
+    esac
 done
 
 echo ""
 echo "========================================="
 echo "Patch application complete!"
-echo "Applied $patch_count patch(es)"
+echo "Applied:  $patch_count patch(es)"
+echo "Skipped:  $skipped_count patch(es)"
+echo "Failed:   $failed_count patch(es)"
 echo "========================================="
+
+# Exit with error if any patches failed
+if [ $failed_count -gt 0 ]; then
+    echo "WARNING: Some patches failed to apply!"
+    echo "Build may not include all fixes."
+    echo "Check the output above for details."
+    # Don't fail the build, but warn
+    exit 0
+fi
 
 exit 0
