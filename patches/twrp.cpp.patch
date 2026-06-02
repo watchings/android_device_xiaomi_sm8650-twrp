@@ -12,33 +12,33 @@ index b53417f..be8a055 100644
 +	LOGINFO("======================================================\n");
 +	LOGINFO("Applying servicemanager deadlock fix for crypto...\n");
 +	LOGINFO("======================================================\n");
-+	
++
 +	// Start servicemanager to allow service registration
 +	LOGINFO("Starting servicemanager...\n");
 +	property_set("ctl.start", "servicemanager");
-+	
++
 +	// Increased wait time to ensure servicemanager fully initializes
 +	// This is critical for slower devices or heavy loads
 +	LOGINFO("Waiting for servicemanager initialization (1500ms)...\n");
 +	std::this_thread::sleep_for(std::chrono::milliseconds(1500));
-+	
++
 +	// Stop servicemanager to break the deadlock cycle
 +	LOGINFO("Stopping servicemanager to prevent blocking...\n");
 +	property_set("ctl.stop", "servicemanager");
-+	
++
 +	// Wait for clean shutdown
 +	LOGINFO("Waiting for servicemanager shutdown (300ms)...\n");
 +	std::this_thread::sleep_for(std::chrono::milliseconds(300));
-+	
++
 +	// Also handle hwservicemanager and vndservicemanager if they started
 +	LOGINFO("Ensuring all service managers are stopped...\n");
 +	property_set("ctl.stop", "hwservicemanager");
 +	property_set("ctl.stop", "vndservicemanager");
 +	property_set("ctl.stop", "keystore2");
 +	std::this_thread::sleep_for(std::chrono::milliseconds(200));
-+	
++
 +	LOGINFO("Servicemanager deadlock fix completed.\n");
-+	
++
 +	// Disabled copySqliteDb() as it may trigger servicemanager dependency
 +	// android::keystore::copySqliteDb();
  #endif
