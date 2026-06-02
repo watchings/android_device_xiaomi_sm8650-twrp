@@ -9,8 +9,10 @@ Patches are organized by file path hierarchy, mirroring the recovery source stru
 ```
 patches/
 ├── etc/init/servicemanager.rc.patch      # Disables auto-start of servicemanager
+├── etc/init/hwservicemanager.rc.patch    # Disables auto-start of hwservicemanager
+├── etc/init/vndservicemanager.rc.patch   # Disables auto-start of vndservicemanager
 ├── etc/init/keystore2.rc.patch           # Disables auto-start of keystore2
-├── twrp.cpp.patch                        # Disables copySqliteDb() call
+├── twrp.cpp.patch                        # Implements controlled servicemanager lifecycle
 ├── apply-patches.sh                      # Automated patch application script
 └── README.md                             # This file
 ```
@@ -21,18 +23,35 @@ When `TW_INCLUDE_CRYPTO := true` is set in BoardConfig.mk, OrangeFox recovery ge
 
 ## Root Cause
 
-1. `servicemanager` starts on the `init` phase
+The deadlock occurs because:
+
+1. `servicemanager`, `hwservicemanager`, and `vndservicemanager` all start on the `init` phase
 2. `keystore2` starts on `late-init` phase and tries to register with servicemanager
 3. `android::keystore::copySqliteDb()` is called which may interact with servicemanager
-4. This creates a deadlock where servicemanager waits for services to register, but those services are waiting for other dependencies
+4. This creates a circular dependency where servicemanager waits for services to register, but those services are waiting for other dependencies
 
 ## Solution
 
-The patches disable:
+The patches implement a two-pronged approach:
 
-1. **etc/init/servicemanager.rc.patch**: Disables auto-start of servicemanager during init
-2. **etc/init/keystore2.rc.patch**: Disables auto-start of keystore2 during late-init  
-3. **twrp.cpp.patch**: Comments out the problematic `copySqliteDb()` call
+### 1. Prevent Auto-Start of Service Managers (4 patches)
+
+- **etc/init/servicemanager.rc.patch**: Disables auto-start of servicemanager during init
+- **etc/init/hwservicemanager.rc.patch**: Disables auto-start of hwservicemanager during init
+- **etc/init/vndservicemanager.rc.patch**: Disables auto-start of vndservicemanager during init
+- **etc/init/keystore2.rc.patch**: Disables auto-start of keystore2 during late-init
+
+### 2. Controlled Servicemanager Lifecycle (1 patch)
+
+- **twrp.cpp.patch**: Implements programmatic control of servicemanager in the crypto initialization code
+
+The twrp.cpp patch:
+1. Starts servicemanager programmatically when crypto is enabled
+2. Waits 500ms for service registration to complete
+3. Stops servicemanager to prevent indefinite waiting
+4. Comments out the problematic `copySqliteDb()` call
+
+This mimics the manual workaround (`adb shell start servicemanager && adb shell stop servicemanager`) automatically during boot.
 
 ## Application
 
@@ -58,6 +77,8 @@ The script finds all `*.patch` files in the patches directory and subdirectories
 ## Files Modified
 
 - `bootable/recovery/etc/init/servicemanager.rc`
+- `bootable/recovery/etc/init/hwservicemanager.rc`
+- `bootable/recovery/etc/init/vndservicemanager.rc`
 - `bootable/recovery/etc/init/keystore2.rc`
 - `bootable/recovery/twrp.cpp`
 
@@ -67,6 +88,7 @@ After applying these patches:
 - ✅ OrangeFox Recovery boots normally with crypto enabled
 - ✅ Decryption functionality still works properly
 - ✅ No manual intervention required to unstick splash screen
+- ✅ All patches have been verified to apply cleanly to OrangeFox Recovery source
 
 ## Adding New Patches
 
