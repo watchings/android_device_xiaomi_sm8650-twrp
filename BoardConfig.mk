@@ -121,6 +121,9 @@ BOARD_USES_METADATA_PARTITION := true
 BOARD_USES_QCOM_FBE_DECRYPTION := true
 TW_USE_FSCRYPT_POLICY := 2
 
+# Skip blocking crypto operations to prevent hangs
+TW_SKIP_CRYPTO_BLOCKING_OPS := true
+
 # Tool
 TW_INCLUDE_REPACKTOOLS := true
 TW_INCLUDE_RESETPROP := true

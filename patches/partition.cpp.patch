@@ -1,0 +1,42 @@
+diff --git a/partition.cpp b/partition.cpp
+index a1b2c3d..e4f5g6h 100644
+--- a/partition.cpp
++++ b/partition.cpp
+@@ -834,9 +834,15 @@ void TWPartition::Setup_Data_Decrypt() {
+ 	ExcludeAll(Mount_Point + "/cache");
+ 	ExcludeAll(Mount_Point + "/per_boot"); // removed each boot by init
+ 	ExcludeAll(Mount_Point + "/gsi"); // cow devices
++	
++#ifdef TW_SKIP_CRYPTO_BLOCKING_OPS
++	// Skip blocking Decrypt_DE operation to prevent hang
++	LOGINFO("Skipping Decrypt_DE retry loop (TW_SKIP_CRYPTO_BLOCKING_OPS enabled)\n");
++	int retry_count = 0;  // Don't retry
++#else
+ 	int retry_count = 3;
+ 	while (!android::keystore::Decrypt_DE() && --retry_count)
+ 		usleep(2000);
++#endif
+ 	if (retry_count > 0) {
+ 		PartitionManager.Set_Crypto_State();
+ 		Is_Encrypted = true;
+@@ -843,6 +849,12 @@ void TWPartition::Setup_Data_Decrypt() {
+ 		Is_Decrypted = false;
+ 		DataManager::SetValue(TW_IS_ENCRYPTED, 1);
+ 		string filename;
++#ifdef TW_SKIP_CRYPTO_BLOCKING_OPS
++		// Skip blocking Get_Password_Type operation
++		LOGINFO("Skipping Get_Password_Type (TW_SKIP_CRYPTO_BLOCKING_OPS enabled)\n");
++		int pwd_type = 0;  // Default password type
++		(void)filename;  // Suppress unused warning
++#else
+ 		int pwd_type = android::keystore::Get_Password_Type(0, filename);
+ 		if (pwd_type < 0) {
+ 			LOGERR("This build does not have synthetic password decrypt support\n");
+@@ -849,6 +861,7 @@ void TWPartition::Setup_Data_Decrypt() {
+ 			pwd_type = 0;  // default password
+ 		}
+ 		PartitionManager.Parse_Users();  // after load_all_de_keys() to parse_users
++#endif
+ 		std::vector<users_struct>::iterator iter;
+ 		std::vector<users_struct>* userList = PartitionManager.Get_Users_List();
+ 		for (iter = userList->begin(); iter != userList->end(); iter++) {

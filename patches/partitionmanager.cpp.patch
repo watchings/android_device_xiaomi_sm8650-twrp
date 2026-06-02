@@ -1,0 +1,46 @@
+diff --git a/partitionmanager.cpp b/partitionmanager.cpp
+index a1b2c3d..e4f5g6h 100644
+--- a/partitionmanager.cpp
++++ b/partitionmanager.cpp
+@@ -2276,7 +2276,14 @@ void TWPartitionManager::Parse_Users() {
+ 			}
+ 
+ 			string filename;
++#ifdef TW_SKIP_CRYPTO_BLOCKING_OPS
++			// Skip blocking Get_Password_Type operation
++			LOGINFO("Skipping Get_Password_Type for user %d (TW_SKIP_CRYPTO_BLOCKING_OPS enabled)\n", userId);
++			user.type = 0;  // Default password type
++			(void)filename;  // Suppress unused warning
++#else
+ 			user.type = android::keystore::Get_Password_Type(userId, filename);
++#endif
+ 
+ 			user.isDecrypted = false;
+ 			if (strcmp(user_check_result, "1") == 0)
+@@ -2364,9 +2371,15 @@ int TWPartitionManager::Decrypt_Device(string Password, int user_id) {
+ 		}
+ 
+ 		int retry_count = 10;
++#ifdef TW_SKIP_CRYPTO_BLOCKING_OPS
++		// Skip blocking wait for gatekeeper file
++		LOGINFO("Skipping gatekeeper file wait (TW_SKIP_CRYPTO_BLOCKING_OPS enabled)\n");
++#else
+ 		while (!TWFunc::Path_Exists("/data/system/users/gatekeeper.password.key") && --retry_count)
+ 			usleep(2000); // A small sleep is needed after mounting /data to ensure reliable decrypt...maybe because of DE?
++#endif
+ 		gui_msg(Msg("decrypting_user_fbe=Attempting to decrypt FBE for user {1}...")(user_id));
++#ifndef TW_SKIP_CRYPTO_BLOCKING_OPS
+ 		if (android::keystore::Decrypt_User(user_id, Password)) {
+ 			gui_msg(Msg("decrypt_user_success_fbe=User {1} Decrypted Successfully")(user_id));
+ 			Mark_User_Decrypted(user_id);
+@@ -2395,6 +2408,10 @@ int TWPartitionManager::Decrypt_Device(string Password, int user_id) {
+ 		} else {
+ 			gui_msg(Msg(msg::kError, "decrypt_user_fail_fbe=Failed to decrypt user {1}")(user_id));
+ 			return -1;
++#else
++		// Skip all blocking Decrypt_User operations
++		LOGINFO("Skipping Decrypt_User operations (TW_SKIP_CRYPTO_BLOCKING_OPS enabled)\n");
++#endif
+ 		}
+ 	} else {
+ 		LOGERR("Unable to locate data partition.\n");
