@@ -2,13 +2,28 @@ diff --git a/twrp.cpp b/twrp.cpp
 index b53417f..13a0e3b 100644
 --- a/twrp.cpp
 +++ b/twrp.cpp
-@@ -249,7 +249,9 @@ static void process_recovery_mode(twrpAdbBuFifo* adb_bu_fifo, bool skip_decrypti
+@@ -249,7 +249,24 @@ static void process_recovery_mode(twrpAdbBuFifo* adb_bu_fifo, bool skip_decrypti
   #endif
   
   #ifdef TW_INCLUDE_CRYPTO
 -	android::keystore::copySqliteDb();
-+	// Disabled to prevent servicemanager deadlock
-+	// This call causes servicemanager to wait indefinitely when crypto is enabled
++	// Workaround for servicemanager deadlock with crypto enabled
++	// Start and stop servicemanager to allow service registration without blocking
++	LOGINFO("Starting servicemanager to prevent crypto deadlock...\n");
++	property_set("ctl.start", "servicemanager");
++	
++	// Give servicemanager time to start and complete any pending registrations
++	std::this_thread::sleep_for(std::chrono::milliseconds(500));
++	
++	// Stop servicemanager to prevent indefinite waiting
++	LOGINFO("Stopping servicemanager after initialization...\n");
++	property_set("ctl.stop", "servicemanager");
++	
++	// Brief delay to allow clean shutdown
++	std::this_thread::sleep_for(std::chrono::milliseconds(100));
++	
++	// Disabled copySqliteDb() as it may trigger servicemanager dependency
++	// This function is not critical for crypto functionality
 +	// android::keystore::copySqliteDb();
   #endif
   	Decrypt_Page(skip_decryption, datamedia);
