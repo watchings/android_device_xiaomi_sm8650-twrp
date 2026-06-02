@@ -89,6 +89,19 @@ jobs:
         cd ${{ inputs.DEVICE_PATH }}
         echo "COMMIT_ID=$(git rev-parse HEAD)" >> $GITHUB_ENV
 
+    - name: Apply OrangeFox Recovery Patches
+      run: |
+        echo "Applying patches to fix servicemanager deadlock with crypto..."
+        RECOVERY_PATH="${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}/bootable/recovery"
+        PATCHES_DIR="${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}/${{ inputs.DEVICE_PATH }}/patches"
+        
+        if [ -f "$PATCHES_DIR/apply-patches.sh" ]; then
+          chmod +x "$PATCHES_DIR/apply-patches.sh"
+          bash "$PATCHES_DIR/apply-patches.sh" "$RECOVERY_PATH" "$PATCHES_DIR"
+        else
+          echo "Warning: apply-patches.sh not found, skipping patch application"
+        fi
+
     - name: Building OrangeFox
       run: |
         cd ${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}

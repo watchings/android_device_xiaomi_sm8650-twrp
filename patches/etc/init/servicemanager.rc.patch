@@ -1,0 +1,14 @@
+diff --git a/etc/init/servicemanager.rc b/etc/init/servicemanager.rc
+index 40ed84d..d1adae1 100644
+--- a/etc/init/servicemanager.rc
++++ b/etc/init/servicemanager.rc
+@@ -1,5 +1,7 @@
+-on init
+-    start servicemanager
++# Disabled auto-start to prevent deadlock with crypto services
++# servicemanager will be started on-demand when needed
++# on init
++#     start servicemanager
+ 
+ service servicemanager /system/bin/servicemanager
+     user root
