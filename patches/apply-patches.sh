@@ -1,7 +1,15 @@
 #!/bin/bash
 
-# Script to apply OrangeFox Recovery patches
+# Script to apply OrangeFox Recovery patches from file hierarchy
 # This fixes the servicemanager deadlock issue when TW_INCLUDE_CRYPTO is enabled
+#
+# Patch directory structure:
+# patches/
+# ├── etc/init/servicemanager.rc.patch
+# ├── etc/init/keystore2.rc.patch
+# └── twrp.cpp.patch
+#
+# Patches are discovered automatically by walking the directory tree
 
 RECOVERY_PATH="$1"
 PATCHES_DIR="$2"
@@ -34,7 +42,8 @@ cd "$RECOVERY_PATH"
 # Function to apply a single patch
 apply_patch() {
     local patch_file="$1"
-    local patch_name=$(basename "$patch_file")
+    local relative_path="${patch_file#$PATCHES_DIR/}"
+    local patch_name="${relative_path%.patch}"
     
     echo -n "Applying $patch_name... "
     
@@ -48,13 +57,11 @@ apply_patch() {
     fi
 }
 
-# Apply patches in order
+# Find and apply all patches in order
 patch_count=0
-for patch in "$PATCHES_DIR"/*.patch; do
-    if [ -f "$patch" ]; then
-        if apply_patch "$patch"; then
-            ((patch_count++))
-        fi
+for patch in $(find "$PATCHES_DIR" -name "*.patch" -type f | sort); do
+    if apply_patch "$patch"; then
+        ((patch_count++))
     fi
 done
 
@@ -63,3 +70,5 @@ echo "========================================="
 echo "Patch application complete!"
 echo "Applied $patch_count patch(es)"
 echo "========================================="
+
+exit 0
