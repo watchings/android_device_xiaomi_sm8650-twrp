@@ -1,39 +1,36 @@
 diff --git a/twrp.cpp b/twrp.cpp
-index b53417f..c9e8d3f 100644
+index b53417f..9b49464 100644
 --- a/twrp.cpp
 +++ b/twrp.cpp
-@@ -87,8 +87,34 @@ static void Decrypt_Page(bool SkipDecryption, bool datamedia) {
- 		if (SkipDecryption) {
- 			LOGINFO("Skipping decryption\n");
- 			PartitionManager.Update_System_Details();
+@@ -92,6 +92,32 @@ static void Decrypt_Page(bool SkipDecryption, bool datamedia) {
  		} else if (DataManager::GetIntValue(TW_CRYPTO_PWTYPE) != 0) {
  			DataManager::SetValue(FOX_ENCRYPTED_DEVICE, "1");
  			LOGINFO("Is encrypted, do decrypt page first\n");
 +#ifdef TW_INCLUDE_CRYPTO
-+			// Fix servicemanager deadlock BEFORE showing decrypt GUI
-+			// This runs right before the decrypt page loads to prevent splash screen hang
-+			LOGINFO("======================================================\n");
-+			LOGINFO("Applying servicemanager deadlock fix for crypto...\n");
-+			LOGINFO("======================================================\n");
-+			
-+			// Start servicemanager to allow crypto service registration
-+			LOGINFO("Starting servicemanager...\n");
-+			property_set("ctl.start", "servicemanager");
-+			std::this_thread::sleep_for(std::chrono::milliseconds(1500));
-+			
-+			// Stop servicemanager to prevent GUI deadlock
-+			LOGINFO("Stopping servicemanager to prevent blocking...\n");
-+			property_set("ctl.stop", "servicemanager");
-+			std::this_thread::sleep_for(std::chrono::milliseconds(300));
-+			
-+			// Also stop related service managers
-+			LOGINFO("Stopping related service managers...\n");
-+			property_set("ctl.stop", "hwservicemanager");
-+			property_set("ctl.stop", "vndservicemanager");
-+			property_set("ctl.stop", "keystore2");
-+			std::this_thread::sleep_for(std::chrono::milliseconds(200));
-+			
-+			LOGINFO("Servicemanager deadlock fix completed.\n");
++// Fix servicemanager deadlock BEFORE showing decrypt GUI
++// This runs right before the decrypt page loads to prevent splash screen hang
++LOGINFO("======================================================\n");
++LOGINFO("Applying servicemanager deadlock fix for crypto...\n");
++LOGINFO("======================================================\n");
++
++// Start servicemanager to allow crypto service registration
++LOGINFO("Starting servicemanager...\n");
++property_set("ctl.start", "servicemanager");
++std::this_thread::sleep_for(std::chrono::milliseconds(1500));
++
++// Stop servicemanager to prevent GUI deadlock
++LOGINFO("Stopping servicemanager to prevent blocking...\n");
++property_set("ctl.stop", "servicemanager");
++std::this_thread::sleep_for(std::chrono::milliseconds(300));
++
++// Also stop related service managers
++LOGINFO("Stopping related service managers...\n");
++property_set("ctl.stop", "hwservicemanager");
++property_set("ctl.stop", "vndservicemanager");
++property_set("ctl.stop", "keystore2");
++std::this_thread::sleep_for(std::chrono::milliseconds(200));
++
++LOGINFO("Servicemanager deadlock fix completed.\n");
 +#endif
  			if (DataManager::GetIntValue(TW_IS_FBE))
  				DataManager::SetValue("tw_crypto_user_id", "0");
