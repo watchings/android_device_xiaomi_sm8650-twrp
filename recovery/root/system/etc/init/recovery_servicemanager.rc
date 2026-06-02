@@ -2,24 +2,30 @@
 # This file provides init-level control of servicemanager lifecycle
 # to prevent crypto-related deadlocks during boot
 
-# Property to trigger servicemanager fix
-on property:twrp.crypto.ready=1
-    # Start servicemanager briefly to allow service registration
+# Critical: Apply the servicemanager fix early in boot process
+# This runs after filesystems are mounted but before decryption
+on post-fs
+    # Start servicemanager to allow any required service registrations
     start servicemanager
-    # Note: The sleep is handled in C++ code (twrp.cpp)
+    # Wait for initialization (using exec with sleep)
+    exec - root root -- /system/bin/sleep 2
+    # Stop servicemanager to prevent deadlock
+    stop servicemanager
+    # Also stop related service managers
+    stop hwservicemanager
+    stop vndservicemanager
+    stop keystore2
 
-# Ensure all service managers are disabled on boot
+# Ensure all service managers stay disabled
 on post-fs-data
-    # Make sure service managers don't auto-start
     stop servicemanager
     stop hwservicemanager
     stop vndservicemanager
     stop keystore2
 
-# Additional safety: prevent service managers from restarting
+# Additional safety during boot phase
 on boot
-    # Disable service managers to prevent auto-restart
-    setprop ctl.stop servicemanager
-    setprop ctl.stop hwservicemanager
-    setprop ctl.stop vndservicemanager
-    setprop ctl.stop keystore2
+    stop servicemanager
+    stop hwservicemanager
+    stop vndservicemanager
+    stop keystore2
