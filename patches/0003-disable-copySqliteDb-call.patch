@@ -1,17 +1,8 @@
-From: OrangeFox Recovery Patcher <patch@orangefox.recovery>
-Date: Mon, 2 Jun 2026 08:51:00 +0000
-Subject: [PATCH] Disable copySqliteDb call to prevent servicemanager hang
-
-The android::keystore::copySqliteDb() function call can cause
-servicemanager to hang when crypto is enabled. This function is not
-essential for basic crypto functionality and causes more problems
-than it solves.
-
 diff --git a/twrp.cpp b/twrp.cpp
-index 1234567..abcdefg 100644
+index b53417f..13a0e3b 100644
 --- a/twrp.cpp
 +++ b/twrp.cpp
-@@ -249,7 +249,9 @@
+@@ -249,7 +249,9 @@ static void process_recovery_mode(twrpAdbBuFifo* adb_bu_fifo, bool skip_decrypti
  #endif
  
  #ifdef TW_INCLUDE_CRYPTO

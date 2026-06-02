@@ -1,19 +1,8 @@
-From: OrangeFox Recovery Patcher <patch@orangefox.recovery>
-Date: Mon, 2 Jun 2026 08:51:00 +0000
-Subject: [PATCH] Fix servicemanager deadlock when crypto is enabled
-
-When TW_INCLUDE_CRYPTO is enabled, servicemanager gets stuck waiting
-for crypto services (like keystore2) to register. However, keystore2
-may be waiting for other dependencies, creating a deadlock.
-
-Solution: Don't auto-start servicemanager on init when it's defined
-as disabled. Let it be started on-demand when actually needed.
-
 diff --git a/etc/init/servicemanager.rc b/etc/init/servicemanager.rc
-index 1234567..abcdefg 100644
+index 40ed84d..d1adae1 100644
 --- a/etc/init/servicemanager.rc
 +++ b/etc/init/servicemanager.rc
-@@ -1,5 +1,6 @@
+@@ -1,5 +1,7 @@
 -on init
 -    start servicemanager
 +# Disabled auto-start to prevent deadlock with crypto services

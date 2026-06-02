@@ -92,27 +92,15 @@ jobs:
     - name: Apply OrangeFox Recovery Patches
       run: |
         echo "Applying patches to fix servicemanager deadlock with crypto..."
-        cd ${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}/bootable/recovery
+        RECOVERY_PATH="${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}/bootable/recovery"
+        PATCHES_DIR="${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}/${{ inputs.DEVICE_PATH }}/patches"
         
-        # Apply patch 1: Fix servicemanager deadlock
-        if [ -f "${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}/${{ inputs.DEVICE_PATH }}/patches/0001-fix-servicemanager-deadlock-with-crypto.patch" ]; then
-          echo "Applying patch 0001: servicemanager deadlock fix"
-          git apply "${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}/${{ inputs.DEVICE_PATH }}/patches/0001-fix-servicemanager-deadlock-with-crypto.patch" || echo "Patch 0001 failed or already applied"
+        if [ -f "$PATCHES_DIR/apply-patches.sh" ]; then
+          chmod +x "$PATCHES_DIR/apply-patches.sh"
+          bash "$PATCHES_DIR/apply-patches.sh" "$RECOVERY_PATH" "$PATCHES_DIR"
+        else
+          echo "Warning: apply-patches.sh not found, skipping patch application"
         fi
-        
-        # Apply patch 2: Disable keystore auto-start
-        if [ -f "${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}/${{ inputs.DEVICE_PATH }}/patches/0002-disable-keystore-auto-start.patch" ]; then
-          echo "Applying patch 0002: disable keystore auto-start"
-          git apply "${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}/${{ inputs.DEVICE_PATH }}/patches/0002-disable-keystore-auto-start.patch" || echo "Patch 0002 failed or already applied"
-        fi
-        
-        # Apply patch 3: Disable copySqliteDb call
-        if [ -f "${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}/${{ inputs.DEVICE_PATH }}/patches/0003-disable-copySqliteDb-call.patch" ]; then
-          echo "Applying patch 0003: disable copySqliteDb call"
-          git apply "${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}/${{ inputs.DEVICE_PATH }}/patches/0003-disable-copySqliteDb-call.patch" || echo "Patch 0003 failed or already applied"
-        fi
-        
-        echo "Patches applied successfully!"
 
     - name: Building OrangeFox
       run: |
