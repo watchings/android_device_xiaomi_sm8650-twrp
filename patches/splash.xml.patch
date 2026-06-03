@@ -11,7 +11,7 @@ index 788d80a..40c53a7 100644
  -->
  <recovery>
  	<details>
-@@ -10,50 +9,67 @@
+@@ -10,50 +9,72 @@
  	</details>
  	
  	<resources>
@@ -22,7 +22,7 @@ index 788d80a..40c53a7 100644
 +		<font name="console_font" filename="Roboto-Regular.ttf" size="18"/>
 +		<font name="button_font" filename="Roboto-Regular.ttf" size="28"/>
  	</resources>
- 
+
  	<variables>
 -		<variable name="of" value="%screen_h%-400"/>
 -		<variable name="rec" value="%screen_h%-320"/>
@@ -31,6 +31,7 @@ index 788d80a..40c53a7 100644
 -		<variable name="header_color" value="#000000"/>
  		<variable name="background_color" value="#000000"/>
 +		<variable name="button_color" value="#FF6600"/>
++		<variable name="button_highlight_color" value="#FF8833"/>
 +		<variable name="button_text_color" value="#FFFFFF"/>
 +		<variable name="console_bg_color" value="#000000"/>
 +		<variable name="console_fg_color" value="#00FF00"/>
@@ -42,36 +43,38 @@ index 788d80a..40c53a7 100644
 +		<variable name="console_y_pos" value="960"/>
 +		<variable name="console_height" value="940"/>
  	</variables>
- 
+
  	<pages>
  		<page name="splash">
  			<background color="%background_color%"/>
- 
+
 -			<fill color="%header_color%">
 -				<placement x="0" y="0" w="%screen_width%" h="%screen_height%"/>
 +			<!-- Button 1: Stop servicemanager - Upper half -->
-+			<button style="main_button">
++			<button>
 +				<placement x="%button1_x_pos%" y="%button_y_pos%" w="%button_width%" h="%button_height%"/>
 +				<fill color="%button_color%"/>
 +				<text>Stop SM</text>
 +				<font resource="button_font" color="%button_text_color%"/>
++				<highlight color="%button_highlight_color%"/>
 +				<actions>
-+					<action function="cmd">stop servicemanager</action>
-+					<action function="cmd">stop hwservicemanager</action>
-+					<action function="cmd">stop vndservicemanager</action>
-+					<action function="cmd">stop keystore2</action>
++					<action function="cmd">setprop ctl.stop servicemanager</action>
++					<action function="cmd">setprop ctl.stop hwservicemanager</action>
++					<action function="cmd">setprop ctl.stop vndservicemanager</action>
++					<action function="cmd">setprop ctl.stop keystore2</action>
 +					<action function="cmd">echo "Stopped servicemanager and related services" >> /tmp/recovery.log</action>
 +				</actions>
 +			</button>
 +
 +			<!-- Button 2: Start servicemanager - Upper half -->
-+			<button style="main_button">
++			<button>
 +				<placement x="%button2_x_pos%" y="%button_y_pos%" w="%button_width%" h="%button_height%"/>
 +				<fill color="%button_color%"/>
 +				<text>Start SM</text>
 +				<font resource="button_font" color="%button_text_color%"/>
++				<highlight color="%button_highlight_color%"/>
 +				<actions>
-+					<action function="cmd">start servicemanager</action>
++					<action function="cmd">setprop ctl.start servicemanager</action>
 +					<action function="cmd">echo "Started servicemanager" >> /tmp/recovery.log</action>
 +				</actions>
 +			</button>
@@ -80,7 +83,7 @@ index 788d80a..40c53a7 100644
 +			<fill color="%console_bg_color%">
 +				<placement x="0" y="%console_y_pos%" w="%screen_width%" h="%console_height%"/>
  			</fill>
- 
+
 -			<image>
 -				<image resource="splash_bg"/>
 -				<placement x="540" y="%center_y%" placement="4"/>
@@ -104,7 +107,8 @@ index 788d80a..40c53a7 100644
 -			</text>
 +			<console>
 +				<placement x="20" y="%console_y_pos%" w="1040" h="%console_height%"/>
-+				<font resource="console_font" color="%console_fg_color%" spacing="2"/>
++				<color foreground="%console_fg_color%" background="%console_bg_color%" scroll="#808080"/>
++				<font resource="console_font" spacing="2"/>
 +			</console>
  		</page>
  	</pages>
