@@ -11,7 +11,7 @@ index 788d80a..40c53a7 100644
  -->
  <recovery>
  	<details>
-@@ -10,50 +9,72 @@
+@@ -10,50 +9,71 @@
  	</details>
  	
  	<resources>
@@ -22,7 +22,7 @@ index 788d80a..40c53a7 100644
 +		<font name="console_font" filename="Roboto-Regular.ttf" size="18"/>
 +		<font name="button_font" filename="Roboto-Regular.ttf" size="28"/>
  	</resources>
-
+ 
  	<variables>
 -		<variable name="of" value="%screen_h%-400"/>
 -		<variable name="rec" value="%screen_h%-320"/>
@@ -43,11 +43,11 @@ index 788d80a..40c53a7 100644
 +		<variable name="console_y_pos" value="960"/>
 +		<variable name="console_height" value="940"/>
  	</variables>
-
+ 
  	<pages>
  		<page name="splash">
  			<background color="%background_color%"/>
-
+ 
 -			<fill color="%header_color%">
 -				<placement x="0" y="0" w="%screen_width%" h="%screen_height%"/>
 +			<!-- Button 1: Stop servicemanager - Upper half -->
@@ -83,7 +83,7 @@ index 788d80a..40c53a7 100644
 +			<fill color="%console_bg_color%">
 +				<placement x="0" y="%console_y_pos%" w="%screen_width%" h="%console_height%"/>
  			</fill>
-
+ 
 -			<image>
 -				<image resource="splash_bg"/>
 -				<placement x="540" y="%center_y%" placement="4"/>
