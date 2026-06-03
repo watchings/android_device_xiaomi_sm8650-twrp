@@ -11,7 +11,8 @@ Replaces the OrangeFox splash screen with a debug interface that includes:
 **Element Layering (bottom to top):**
 
 1. **OrangeFox Logo (Background Layer)**
-   - Centered logo positioned at y=1550
+   - Horizontally centered (x=540) on 1080px screen
+   - Positioned near bottom at y=1550
    - Scaled to 1.2x for visibility
    - Maintains aspect ratio
    - Renders behind console and buttons

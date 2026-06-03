@@ -44,9 +44,10 @@ This patch modifies `gui/theme/portrait_hdpi/splash.xml` to create a debug splas
 **Features (in rendering order - bottom to top):**
 
 1. **OrangeFox Logo (Background Layer)**
-   - Centered at position (540, 1550)
-   - Scaled to 1.2x for visibility without overwhelming the interface
-   - Positioned above buttons for visual balance
+   - Horizontally centered (x=540) on 1080px screen
+   - Positioned near bottom at y=1550
+   - Scaled to 1.2x for visibility
+   - Maintains aspect ratio
    - Renders as the bottom layer (behind console and buttons)
 
 2. **Console Display (Middle Layer - 1040x1460 pixels)**
