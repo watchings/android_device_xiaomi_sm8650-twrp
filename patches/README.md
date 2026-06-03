@@ -1,116 +1,49 @@
 # OrangeFox Recovery Patches
 
-These patches fix the servicemanager deadlock issue when `TW_INCLUDE_CRYPTO` is enabled.
+This directory contains patches for OrangeFox Recovery to replace the splash screen with a debug interface for controlling servicemanager.
 
-## Patch Directory Structure
+## Patches
 
-Patches are organized by file path hierarchy, mirroring the recovery source structure:
+### splash.xml.patch
 
-```
-patches/
-├── etc/init/servicemanager.rc.patch      # Disables auto-start of servicemanager
-├── etc/init/hwservicemanager.rc.patch    # Disables auto-start of hwservicemanager
-├── etc/init/vndservicemanager.rc.patch   # Disables auto-start of vndservicemanager
-├── etc/init/keystore2.rc.patch           # Disables auto-start of keystore2
-├── twrp.cpp.patch                        # Implements controlled servicemanager lifecycle
-├── apply-patches.sh                      # Automated patch application script
-└── README.md                             # This file
-```
+Replaces the OrangeFox splash screen with a debug interface that includes:
 
-## Problem
+1. **Console Display**
+   - Fills most of the screen (1060x1580 pixels)
+   - Shows real-time log output with green text on black background
+   - Uses Roboto-Regular font at 20pt for readability
 
-When `TW_INCLUDE_CRYPTO := true` is set in BoardConfig.mk, OrangeFox recovery gets stuck at the splash screen. The issue is caused by a deadlock between servicemanager and crypto services (keystore2).
+2. **Button 1: Stop SM (Stop ServiceManager)**
+   - Orange button (450x100 pixels) at bottom left
+   - On click, executes:
+     - `stop servicemanager`
+     - `stop hwservicemanager`
+     - `stop vndservicemanager`
+     - `stop keystore2`
+     - Logs the action to /tmp/recovery.log
 
-## Root Cause
+3. **Button 2: Start SM (Start ServiceManager)**
+   - Orange button (450x100 pixels) at bottom right
+   - On click, executes:
+     - `start servicemanager`
+     - Logs the action to /tmp/recovery.log
 
-The deadlock occurs because:
+## How It Works
 
-1. `servicemanager`, `hwservicemanager`, and `vndservicemanager` all start on the `init` phase
-2. `keystore2` starts on `late-init` phase and tries to register with servicemanager
-3. `android::keystore::copySqliteDb()` is called which may interact with servicemanager
-4. This creates a circular dependency where servicemanager waits for services to register, but those services are waiting for other dependencies
-
-## Solution
-
-The patches implement a two-pronged approach:
-
-### 1. Prevent Auto-Start of Service Managers (4 patches)
-
-- **etc/init/servicemanager.rc.patch**: Disables auto-start of servicemanager during init
-- **etc/init/hwservicemanager.rc.patch**: Disables auto-start of hwservicemanager during init
-- **etc/init/vndservicemanager.rc.patch**: Disables auto-start of vndservicemanager during init
-- **etc/init/keystore2.rc.patch**: Disables auto-start of keystore2 during late-init
-
-### 2. Controlled Servicemanager Lifecycle (1 patch)
-
-- **twrp.cpp.patch**: Implements programmatic control of servicemanager in the crypto initialization code
-
-The twrp.cpp patch:
-1. Starts servicemanager programmatically when crypto is enabled
-2. Waits 500ms for service registration to complete
-3. Stops servicemanager to prevent indefinite waiting
-4. Comments out the problematic `copySqliteDb()` call
-
-This mimics the manual workaround (`adb shell start servicemanager && adb shell stop servicemanager`) automatically during boot.
+The patch modifies `gui/theme/portrait_hdpi/splash.xml` to:
+- Replace the graphical splash screen with a console displaying log output
+- Add two interactive buttons for manually controlling servicemanager
+- Provide real-time visibility into recovery operations
+- Allow debugging of servicemanager-related issues
 
 ## Application
 
-These patches are automatically applied during the build process by the GitHub Actions workflow. The workflow:
+Patches are applied automatically during the build process via the `apply-patches.sh` script.
 
-1. Clones the device tree
-2. Runs the patch application script
-3. Builds OrangeFox Recovery with patched source
+## Purpose
 
-The `apply-patches.sh` script:
-- Discovers patches by walking the directory tree
-- Applies patches in sorted order
-- Skips patches that are already applied
-- Reports success/failure for each patch
-
-## Discovering Patches
-
-The script finds all `*.patch` files in the patches directory and subdirectories:
-- Uses `find` to discover patches recursively
-- Applies patches in alphabetical order
-- Relative path shown in output (e.g., `Applying etc/init/servicemanager.rc...`)
-
-## Files Modified
-
-- `bootable/recovery/etc/init/servicemanager.rc`
-- `bootable/recovery/etc/init/hwservicemanager.rc`
-- `bootable/recovery/etc/init/vndservicemanager.rc`
-- `bootable/recovery/etc/init/keystore2.rc`
-- `bootable/recovery/twrp.cpp`
-
-## Testing
-
-After applying these patches:
-- ✅ OrangeFox Recovery boots normally with crypto enabled
-- ✅ Decryption functionality still works properly
-- ✅ No manual intervention required to unstick splash screen
-- ✅ All patches have been verified to apply cleanly to OrangeFox Recovery source
-
-## Adding New Patches
-
-To add additional patches:
-
-1. Create the patch file in the appropriate directory hierarchy:
-   ```
-   patches/path/to/file.patch
-   ```
-
-2. Place in `patches/` directory, then patches are applied automatically in sorted order
-
-3. No workflow changes needed - the script auto-discovers all `*.patch` files
-
-## Troubleshooting
-
-If patches don't apply:
-1. Check build log for error messages
-2. Verify OrangeFox source version
-3. Verify patch file syntax with: `git apply --check <patch-file>`
-
-## References
-
-- OrangeFox Recovery: https://gitlab.com/OrangeFox/bootable/Recovery
-- Android Init Language: https://android.googlesource.com/platform/system/core/+/master/init/README.md
+This debug interface helps diagnose and work around servicemanager deadlock issues that can occur during crypto operations on encrypted devices. By showing log output and providing manual control over servicemanager, developers can:
+- See what's happening during boot and crypto operations
+- Manually stop servicemanager if it's causing deadlocks
+- Restart servicemanager when needed
+- Debug timing-related issues
