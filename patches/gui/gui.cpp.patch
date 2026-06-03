@@ -1,9 +1,9 @@
 diff --git a/gui/gui.cpp b/gui/gui.cpp
-index 17853f7..835bd87 100644
+index 01919a0..b727792 100644
 --- a/gui/gui.cpp
 +++ b/gui/gui.cpp
-@@ -2,21 +2,38 @@
-         blankTimer.resetTimerAndUnblank();
+@@ -901,21 +901,38 @@ gr_flip();
+ blankTimer.resetTimerAndUnblank();
  #endif
  
 -// load and show splash screen
