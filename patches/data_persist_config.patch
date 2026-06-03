@@ -1,0 +1,32 @@
+diff --git a/data.cpp b/data.cpp
+index 7ca8d86..723e8be 100755
+--- a/data.cpp
++++ b/data.cpp
+@@ -1639,11 +1639,22 @@ void DataManager::ReadSettingsFile(void)
+ 	if (GetStrValue("fox_startup_executed") == "1") {
+ 		static int dcrpfail_count=0;
+ 		TWFunc::Fox_Property_Set("of_decryption_failed", "true");
+-		std::string tempdir = TW_STORAGE_PATH"/Fox";
+-		SetValue("tw_settings_path", tempdir);
+-		if (dcrpfail_count == 0) {
+-			gui_print_color("warning", "I cannot load settings from encrypted device. I will try to save some settings to %s\n", tempdir.c_str());
+-			dcrpfail_count++; // don't spam the console with this warning
++		// Mount /persist and use it for settings when data decryption fails
++		if (PartitionManager.Mount_By_Path("/persist", false)) {
++			std::string tempdir = "/persist/Fox";
++			SetValue("tw_settings_path", tempdir);
++			if (dcrpfail_count == 0) {
++				gui_print_color("warning", "I cannot load settings from encrypted device. I will use /persist for settings: %s\n", tempdir.c_str());
++				dcrpfail_count++; // don't spam the console with this warning
++			}
++		} else {
++			// Fallback to /data/recovery/Fox if /persist mount fails
++			std::string tempdir = TW_STORAGE_PATH"/Fox";
++			SetValue("tw_settings_path", tempdir);
++			if (dcrpfail_count == 0) {
++				gui_print_color("warning", "I cannot load settings from encrypted device and /persist is unavailable. I will try to save some settings to %s\n", tempdir.c_str());
++				dcrpfail_count++; // don't spam the console with this warning
++			}
+ 		}
+ 	}
+   }
