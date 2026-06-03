@@ -1,0 +1,39 @@
+diff --git a/gui/gui.cpp b/gui/gui.cpp
+index 71bbc96..0cbfd1b 100644
+--- a/gui/gui.cpp
++++ b/gui/gui.cpp
+@@ -898,6 +898,13 @@ extern "C" int gui_init(void)
+         blankTimer.resetTimerAndUnblank();
+ #endif
+ 
++	// Initialize input before loading splash to enable button clicks
++#ifdef TW_DELAY_TOUCH_INIT_MS
++	usleep(TW_DELAY_TOUCH_INIT_MS);
++#endif
++	ev_init();
++	input_handler.init();
++
+ 	// load and show splash screen
+ 	if (PageManager::LoadPackage("splash", TWRES "splash.xml", "splash")) {
+ 		LOGERR("Failed to load splash screen XML.\n");
+@@ -905,14 +912,15 @@ extern "C" int gui_init(void)
+ 	else {
+ 		PageManager::SelectPackage("splash");
+ 		PageManager::Render();
++		// Process input events during splash display to make buttons clickable
++		for (int splash_loop = 0; splash_loop < 100; splash_loop++) {
++			input_handler.processInput(10); // Process input with 10ms timeout
++			PageManager::Update();
++			usleep(10000); // 10ms delay between iterations
++		}
+ 		flip();
+ 		PageManager::ReleasePackage("splash");
+ 	}
+-
+-#ifdef TW_DELAY_TOUCH_INIT_MS
+-	usleep(TW_DELAY_TOUCH_INIT_MS);
+-#endif
+-	ev_init();
+ 	return 0;
+ }
+ 
