@@ -8,26 +8,13 @@ This directory contains patches for OrangeFox Recovery to replace the splash scr
 
 Replaces the OrangeFox splash screen with a debug interface that includes:
 
-**Element Layering (bottom to top):**
+**Layout (screen divided into upper and lower halves):**
 
-1. **OrangeFox Logo (Background Layer)**
-   - Horizontally centered (x=540) on 1080px screen
-   - Positioned near bottom at y=1550
-   - Scaled to 1.2x for visibility
-   - Maintains aspect ratio
-   - Renders behind console and buttons
-
-2. **Console Display (Middle Layer)**
-   - Fills most of the screen (1040x1460 pixels)
-   - Shows real-time log output with green text on black background
-   - Uses Roboto-Regular font at 18pt for readability
-   - Positioned at top of screen with 20px padding
-   - Renders on top of logo
-
-3. **Buttons (Top Layer - Interactive)**
+1. **Interactive Buttons (Upper Half - Top Layer)**
    - **Button 1: Stop SM (Stop ServiceManager)**
-     - Orange button (450x100 pixels) at bottom left (x=80, y=1700)
+     - Orange button (450x100 pixels) at upper left (x=80, y=200)
      - Displays "Stop SM" text label in white (28pt font)
+     - Clickable and fully visible
      - On click, executes:
        - `stop servicemanager`
        - `stop hwservicemanager`
@@ -36,11 +23,18 @@ Replaces the OrangeFox splash screen with a debug interface that includes:
        - Logs the action to /tmp/recovery.log
    
    - **Button 2: Start SM (Start ServiceManager)**
-     - Orange button (450x100 pixels) at bottom right (x=550, y=1700)
+     - Orange button (450x100 pixels) at upper right (x=550, y=200)
      - Displays "Start SM" text label in white (28pt font)
+     - Clickable and fully visible
      - On click, executes:
        - `start servicemanager`
        - Logs the action to /tmp/recovery.log
+
+2. **Console Display (Lower Half - 1040x940 pixels)**
+   - Shows real-time log output with green text on black background
+   - Uses Roboto-Regular font at 18pt for readability
+   - Positioned at lower half of screen (y=960, height=940)
+   - Fills the entire lower half of the screen
 
 ## How It Works
 

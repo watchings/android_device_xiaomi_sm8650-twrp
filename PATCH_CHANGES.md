@@ -41,28 +41,14 @@ All previous patches that were not working have been removed:
 
 This patch modifies `gui/theme/portrait_hdpi/splash.xml` to create a debug splash screen.
 
-**Features (in rendering order - bottom to top):**
+**Layout (screen divided into upper and lower halves):**
 
-1. **OrangeFox Logo (Background Layer)**
-   - Horizontally centered (x=540) on 1080px screen
-   - Positioned near bottom at y=1550
-   - Scaled to 1.2x for visibility
-   - Maintains aspect ratio
-   - Renders as the bottom layer (behind console and buttons)
-
-2. **Console Display (Middle Layer - 1040x1460 pixels)**
-   - Black background with green monospace text
-   - Shows real-time log output from recovery operations
-   - Positioned at top of screen (20,20) with proper padding
-   - Uses Roboto-Regular font at 18pt for optimal readability
-   - Renders on top of the logo
-
-3. **Interactive Buttons (Top Layer - Clickable)**
+1. **Interactive Buttons (Upper Half)**
    
-   **Button 1: "Stop SM" (Bottom Left)**
-   - Orange button (450x100 pixels) at position (80, 1700)
+   **Button 1: "Stop SM" (Upper Left)**
+   - Orange button (450x100 pixels) at position (80, 200)
    - Displays "Stop SM" text label in white 28pt font
-   - Fully clickable and visible on top layer
+   - Fully clickable and visible in upper half of screen
    - On click executes:
      ```
      stop servicemanager
@@ -72,15 +58,22 @@ This patch modifies `gui/theme/portrait_hdpi/splash.xml` to create a debug splas
      echo "Stopped servicemanager and related services" >> /tmp/recovery.log
      ```
 
-   **Button 2: "Start SM" (Bottom Right)**
-   - Orange button (450x100 pixels) at position (550, 1700)
+   **Button 2: "Start SM" (Upper Right)**
+   - Orange button (450x100 pixels) at position (550, 200)
    - Displays "Start SM" text label in white 28pt font
-   - Fully clickable and visible on top layer
+   - Fully clickable and visible in upper half of screen
    - On click executes:
      ```
      start servicemanager
      echo "Started servicemanager" >> /tmp/recovery.log
      ```
+
+2. **Console Display (Lower Half - 1040x940 pixels)**
+   - Black background with green monospace text
+   - Shows real-time log output from recovery operations
+   - Positioned at lower half of screen starting at y=960
+   - Uses Roboto-Regular font at 18pt for optimal readability
+   - Fills the entire lower half of the 1920px screen
 
 ## Purpose
 
