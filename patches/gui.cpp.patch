@@ -1,10 +1,9 @@
---- a/gui/gui.cpp	2026-06-03 08:00:00.000000000 +0000
-+++ b/gui/gui.cpp	2026-06-03 08:00:00.000000000 +0000
-@@ -897,17 +897,30 @@
-         blankTimer.resetTimerAndUnblank();
+--- a/gui/gui.cpp
++++ b/gui/gui.cpp
+@@ -898,20 +898,29 @@ int gui_init(void)
+ 	blankTimer.resetTimerAndUnblank();
  #endif
  
-+	// Initialize input BEFORE loading splash so buttons are clickable
 +#ifdef TW_DELAY_TOUCH_INIT_MS
 +	usleep(TW_DELAY_TOUCH_INIT_MS);
 +#endif
@@ -18,8 +17,7 @@
  		PageManager::SelectPackage("splash");
 -		PageManager::Render();
 -		flip();
--		PageManager::ReleasePackage("splash");
-+		
++
 +		// Keep splash screen loaded and interactive for 3 seconds
 +		// This allows buttons to be clickable and console to display
 +		for (int i = 0; i < 30; i++) {
@@ -28,11 +26,11 @@
 +			flip();
 +			usleep(100000); // 100ms sleep = 10 FPS refresh
 +		}
-+		
++
 +		// Now release the splash screen
-+		PageManager::ReleasePackage("splash");
+ 		PageManager::ReleasePackage("splash");
  	}
- 
+-
 -#ifdef TW_DELAY_TOUCH_INIT_MS
 -	usleep(TW_DELAY_TOUCH_INIT_MS);
 -#endif
