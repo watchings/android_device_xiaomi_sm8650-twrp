@@ -10,31 +10,29 @@ Patches are organized in a file hierarchy that mirrors the recovery source tree:
 patches/
 ├── data.cpp.patch                              # Password & config persistence to /persist
 ├── gui/
-│   ├── gui.cpp.patch                           # Enhanced input event handling during splash (merged)
+│   ├── gui.cpp.patch                           # Skip splash display with unblocked inputs
 │   └── theme/portrait_hdpi/
 │       ├── pages/settings.xml.patch            # Remove password restrictions + device credits (merged)
-│       ├── splash.xml.patch                    # Debug splash screen
-│       └── splash_skip.patch                   # Completely skip the splash screen
+│       └── splash.xml.patch                    # Debug splash screen
 ├── apply-patches.sh                            # Automatic patch application script
 └── README.md                                   # This file
 ```
 
 ## New Patches (Issue Fixes)
 
-### gui/gui.cpp.patch (Merged Patch)
-**Problem**: Buttons (physical or touch screen) were not clickable during splash screen. Clicks made during splash were queued and only processed after the splash deadlock released.
+### gui/gui.cpp.patch (Merged Patch - Updated)
+**Problem**: Buttons (physical or touch screen) were not clickable during splash screen. Clicks made during splash were queued and only processed after the splash deadlock released. Additionally, the splash screen caused unnecessary boot delays.
 
-**Solution** (merged from two previous patches):
+**Solution** (merged and updated):
 - Initializes event input system (ev_init) and input_handler **before** loading splash screen
 - Moves input initialization to occur before splash loading (prevents servicemanager deadlock blocking)
 - Processes pending input events before loading splash screen
 - Adds event processing at multiple points: before loading, after loading, after selecting splash
-- Implements interactive splash screen loop with 3-second display duration (30 iterations @ 100ms each)
-- Continuously processes input events (input_handler.processInput) during splash at 10 FPS
-- Updates PageManager state and checks blank timer to handle UI interactions and power button
-- Renders and flips display continuously during splash to maintain visual feedback
+- **Skips the splash display entirely** - no rendering loop, no delay
+- Immediately releases the splash package after loading/selecting
+- Inputs remain completely unblocked throughout the boot process
 
-**Impact**: Buttons are now clickable immediately during splash screen display, with continuous event processing to prevent blocking even if servicemanager deadlocks. The splash screen remains interactive for 3 seconds with proper rendering.
+**Impact**: Buttons are now clickable immediately from boot, with continuous event processing to prevent blocking even if servicemanager deadlocks. The splash screen is skipped entirely, eliminating boot delays while maintaining full input responsiveness.
 
 ---
 
@@ -79,17 +77,6 @@ Customizes the splash screen layout with debug features including:
 - Real-time console output display
 - Diagnostic tools for debugging crypto operations
 
-### gui/theme/portrait_hdpi/splash_skip.patch
-**Purpose**: Completely skip the splash screen by removing all visual elements.
-
-**Changes**:
-- Removes all image resources (splash logo and background)
-- Removes all text elements (OrangeFox and Recovery labels)
-- Removes all decorative fills and UI elements
-- Leaves only a minimal black background
-
-**Result**: The splash screen displays as a blank black screen with no visible content, effectively skipping the splash experience while still maintaining the required XML structure.
-
 ## Applying Patches
 
 Patches are automatically applied during the build process by the `apply-patches.sh` script.
@@ -112,6 +99,6 @@ The script:
 
 ## Issues Resolved
 
-1. **Input Blocking During Splash**: Fixed buttons (physical or touch screen) not being clickable during splash screen. Previously, if buttons were clicked during splash, they would not respond but clicks were processed immediately after the splash deadlock released.
+1. **Input Blocking During Splash**: Fixed buttons (physical or touch screen) not being clickable during splash screen. The solution initializes inputs before splash loading and completely skips the splash display, eliminating both the input blocking issue and unnecessary boot delays.
 
 2. **Encrypted Data Configuration**: Fox now mounts /persist and stores/reads configs and passwords from `/persist/Fox` when data decryption fails, instead of being limited to /data/.fox or /sdcard/.fox. The restriction preventing password changes when data is not unlocked has been removed - passwords are now stored and read from /persist in this scenario.
