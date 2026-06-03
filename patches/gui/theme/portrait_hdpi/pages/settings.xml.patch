@@ -1,5 +1,5 @@
 diff --git a/gui/theme/portrait_hdpi/pages/settings.xml b/gui/theme/portrait_hdpi/pages/settings.xml
-index db82784..5d3d0cc 100644
+index db82784..c8cbca4 100644
 --- a/gui/theme/portrait_hdpi/pages/settings.xml
 +++ b/gui/theme/portrait_hdpi/pages/settings.xml
 @@ -30,19 +30,8 @@
@@ -24,3 +24,26 @@ index db82784..5d3d0cc 100644
  					<icon res="bs_btn_set_secure"/>
  					<action function="page">pass_select</action>
  				</listitem>
+@@ -1195,6 +1184,22 @@
+ 
+ 			<template name="gestures"/>
+ 
++			<!-- Device Tree Credits Section -->
++			<text style="about_name">
++				<placement x="%card_txt_x%" y="1800+%cutout_w%"/>
++				<text>Device Tree Credits</text>
++			</text>
++
++			<text style="about_info">
++				<placement x="%card_txt_x%" y="1860+%cutout_w%"/>
++				<text>GitFASTBOOT &lt;ahmedshahinx0x@gmail.com&gt;</text>
++			</text>
++
++			<text style="about_info">
++				<placement x="%card_txt_x%" y="1920+%cutout_w%"/>
++				<text>GitHub Copilot (splash/patches)</text>
++			</text>
++
+ 			<action>
+ 				<touch key="home"/>
+ 				<action function="page">main</action>

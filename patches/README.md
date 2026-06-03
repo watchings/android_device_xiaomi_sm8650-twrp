@@ -12,9 +12,8 @@ patches/
 ├── gui/
 │   ├── gui.cpp.patch                           # Enhanced input event handling during splash (merged)
 │   └── theme/portrait_hdpi/
-│       └── pages/settings.xml.patch            # Remove password restrictions
-├── settings_about.xml.patch                    # About page customization
-├── splash.xml.patch                            # Debug splash screen
+│       ├── pages/settings.xml.patch            # Remove password restrictions + device credits (merged)
+│       └── splash.xml.patch                    # Debug splash screen
 ├── apply-patches.sh                            # Automatic patch application script
 └── README.md                                   # This file
 ```
@@ -51,24 +50,29 @@ patches/
 
 ---
 
-### gui/theme/portrait_hdpi/pages/settings.xml.patch
-**Problem**: Password changes were restricted when data was not unlocked (tw_is_decrypted == 0), preventing users from managing passwords when data was encrypted.
+### gui/theme/portrait_hdpi/pages/settings.xml.patch (Merged Patch)
+**Problem**: Two separate modifications were needed:
+1. Password changes were restricted when data was not unlocked (tw_is_decrypted == 0), preventing users from managing passwords when data was encrypted
+2. About page needed device tree credits section
 
-**Solution**:
-- Removes the conditional check for `tw_is_decrypted`
+**Solution** (merged from two previous patches):
+- Removes the conditional encryption/decryption checks for password functionality
 - Allows password changes regardless of encryption/decryption state
 - Password will be stored in /persist when data is not decrypted (via data.cpp.patch)
+- Adds Device Tree Credits section to the About page with:
+  - GitFASTBOOT attribution
+  - GitHub Copilot attribution for splash/patches work
 
-**Impact**: Users can now change passwords even when data is encrypted. Passwords are stored in /persist in this scenario.
+**Impact**: 
+- Users can now change passwords even when data is encrypted
+- About page properly credits contributors
+- Settings remain accessible when data partition is encrypted
 
 ---
 
 ## UI Customization Patches
 
-### settings_about.xml.patch
-Updates the About page with device-specific credits.
-
-### splash.xml.patch
+### gui/theme/portrait_hdpi/splash.xml.patch
 Customizes the splash screen layout with debug features including:
 - Interactive buttons to control servicemanager
 - Real-time console output display
