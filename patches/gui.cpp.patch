@@ -1,29 +1,43 @@
 diff --git a/gui/gui.cpp b/gui/gui.cpp
-index 71bbc96..6550d37 100644
+index 71bbc96..66d7859 100644
 --- a/gui/gui.cpp
 +++ b/gui/gui.cpp
-@@ -898,21 +898,33 @@ extern "C" int gui_init(void)
+@@ -898,21 +898,47 @@ extern "C" int gui_init(void)
          blankTimer.resetTimerAndUnblank();
  #endif
  
 +#ifdef TW_DELAY_TOUCH_INIT_MS
 +	usleep(TW_DELAY_TOUCH_INIT_MS);
 +#endif
++	// Initialize input IMMEDIATELY to accept events from the very beginning
++	// This prevents input from being blocked by servicemanager deadlock
 +	ev_init();
++
++	// Process any pending input events before loading splash
++	// This ensures power button presses are handled even if splash loading hangs
++	PageManager::Update();
++	blankTimer.checkForTimeout();
 +
  	// load and show splash screen
  	if (PageManager::LoadPackage("splash", TWRES "splash.xml", "splash")) {
  		LOGERR("Failed to load splash screen XML.\n");
  	}
  	else {
++		// Process events immediately after loading, before selecting
++		PageManager::Update();
++		blankTimer.checkForTimeout();
++
  		PageManager::SelectPackage("splash");
 -		PageManager::Render();
 -		flip();
 +
++		// Process events immediately after selecting
++		PageManager::Update();
++		blankTimer.checkForTimeout();
++
 +		// Keep splash screen loaded and interactive for 3 seconds
-+		// This allows buttons to be clickable, physical buttons to work,
-+		// and console to display. Input events (touch and physical buttons)
-+		// are processed in the PageManager::Update() call.
++		// Input events are processed CONTINUOUSLY to prevent blocking
++		// This allows power button to work even if servicemanager deadlocks
 +		for (int i = 0; i < 30; i++) {
 +			PageManager::Update();
 +			PageManager::Render();
