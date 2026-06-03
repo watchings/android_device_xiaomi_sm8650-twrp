@@ -43,14 +43,21 @@ This patch modifies `gui/theme/portrait_hdpi/splash.xml` to create a debug splas
 
 **Features:**
 
-1. **Console Display (1060x1580 pixels)**
+1. **Console Display (1040x1460 pixels)**
    - Black background with green monospace text
    - Shows real-time log output from recovery operations
-   - Positioned at top of screen (10,10)
-   - Uses Roboto-Regular font at 20pt
+   - Positioned at top of screen (20,20) with proper padding
+   - Uses Roboto-Regular font at 18pt for optimal readability
 
-2. **Button 1: "Stop SM" (Bottom Left)**
-   - Orange button (450x100 pixels) at position (100, 1700)
+2. **OrangeFox Logo**
+   - Centered at position (540, 1550)
+   - Scaled to 1.2x for visibility without overwhelming the interface
+   - Positioned above buttons for visual balance
+
+3. **Button 1: "Stop SM" (Bottom Left)**
+   - Orange button (450x100 pixels) at position (80, 1700)
+   - Displays "Stop SM" text label in white 28pt font
+   - Properly clickable with visible text
    - On click executes:
      ```
      stop servicemanager
@@ -60,8 +67,10 @@ This patch modifies `gui/theme/portrait_hdpi/splash.xml` to create a debug splas
      echo "Stopped servicemanager and related services" >> /tmp/recovery.log
      ```
 
-3. **Button 2: "Start SM" (Bottom Right)**
-   - Orange button (450x100 pixels) at position (530, 1700)
+4. **Button 2: "Start SM" (Bottom Right)**
+   - Orange button (450x100 pixels) at position (550, 1700)
+   - Displays "Start SM" text label in white 28pt font
+   - Properly clickable with visible text
    - On click executes:
      ```
      start servicemanager
