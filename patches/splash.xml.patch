@@ -2,7 +2,7 @@ diff --git a/gui/theme/portrait_hdpi/splash.xml b/gui/theme/portrait_hdpi/splash
 index 788d80a..40c53a7 100644
 --- a/gui/theme/portrait_hdpi/splash.xml
 +++ b/gui/theme/portrait_hdpi/splash.xml
-@@ -1,59 +1,105 @@
+@@ -1,7 +1,6 @@
  <?xml version="1.0"?>
  <!-- 
 -	OrangeFox Splash by OrangeFox Team
@@ -10,72 +10,26 @@ index 788d80a..40c53a7 100644
 +OrangeFox Debug Splash - Shows log output and servicemanager controls
  -->
  <recovery>
--	<details>
--		<resolution width="1080" h="1920"/>
--		<themeversion>3</themeversion>
--	</details>
--	
--	<resources>
+ 	<details>
+@@ -10,50 +9,67 @@
+ 	</details>
+ 	
+ 	<resources>
 -		<image name="splash_logo" filename="SVG/Logos/logo_o.svg" retainaspect="1" scale="2.0"/>
 -		<image name="splash_bg" filename="Splash/user" retainaspect="1"/>
 -		<font name="of" filename="InterDisplay-Medium.ttf" size="64"/>
 -		<font name="recovery" filename="InterDisplay-Regular.ttf" size="52"/>
--	</resources>
--
--	<variables>
--		<variable name="of" value="%screen_h%-400"/>
--		<variable name="rec" value="%screen_h%-320"/>
--		<variable name="screen_width" value="1080"/>
--		<variable name="screen_height" value="1920"/>
--		<variable name="header_color" value="#000000"/>
--		<variable name="background_color" value="#000000"/>
--	</variables>
--
--	<pages>
--		<page name="splash">
--			<background color="%background_color%"/>
--
--			<fill color="%header_color%">
--				<placement x="0" y="0" w="%screen_width%" h="%screen_height%"/>
--			</fill>
--
--			<image>
--				<image resource="splash_bg"/>
--				<placement x="540" y="%center_y%" placement="4"/>
--			</image>
--
--			<image>
--				<image resource="splash_logo"/>
--				<placement x="540" y="%center_y%" placement="4"/>
--			</image>
--
--			<text style="menu_text">
--				<placement x="540" y="%of%" placement="4"/>
--				<font resource="of" color="#ffffff"/>
--				<text>OrangeFox</text>
--			</text>
--
--			<text style="menu_text">
--				<placement x="540" y="%rec%" placement="4"/>
--				<font resource="recovery" color="#ffffff"/>
--				<text>Recovery</text>
--			</text>
--		</page>
--	</pages>
-+	<details>
-+		<resolution width="1080" h="1920"/>
-+		<themeversion>3</themeversion>
-+	</details>
-+	
-+	<resources>
 +		<font name="console_font" filename="Roboto-Regular.ttf" size="18"/>
 +		<font name="button_font" filename="Roboto-Regular.ttf" size="28"/>
-+	</resources>
-+
-+	<variables>
-+		<variable name="screen_width" value="1080"/>
-+		<variable name="screen_height" value="1920"/>
-+		<variable name="background_color" value="#000000"/>
+ 	</resources>
+ 
+ 	<variables>
+-		<variable name="of" value="%screen_h%-400"/>
+-		<variable name="rec" value="%screen_h%-320"/>
+ 		<variable name="screen_width" value="1080"/>
+ 		<variable name="screen_height" value="1920"/>
+-		<variable name="header_color" value="#000000"/>
+ 		<variable name="background_color" value="#000000"/>
 +		<variable name="button_color" value="#FF6600"/>
 +		<variable name="button_text_color" value="#FFFFFF"/>
 +		<variable name="console_bg_color" value="#000000"/>
@@ -87,12 +41,14 @@ index 788d80a..40c53a7 100644
 +		<variable name="button2_x_pos" value="550"/>
 +		<variable name="console_y_pos" value="960"/>
 +		<variable name="console_height" value="940"/>
-+	</variables>
-+
-+	<pages>
-+		<page name="splash">
-+			<background color="%background_color%"/>
-+
+ 	</variables>
+ 
+ 	<pages>
+ 		<page name="splash">
+ 			<background color="%background_color%"/>
+ 
+-			<fill color="%header_color%">
+-				<placement x="0" y="0" w="%screen_width%" h="%screen_height%"/>
 +			<!-- Button 1: Stop servicemanager - Upper half -->
 +			<button style="main_button">
 +				<placement x="%button1_x_pos%" y="%button_y_pos%" w="%button_width%" h="%button_height%"/>
@@ -123,12 +79,33 @@ index 788d80a..40c53a7 100644
 +			<!-- Console for log output - Lower half -->
 +			<fill color="%console_bg_color%">
 +				<placement x="0" y="%console_y_pos%" w="%screen_width%" h="%console_height%"/>
-+			</fill>
-+
+ 			</fill>
+ 
+-			<image>
+-				<image resource="splash_bg"/>
+-				<placement x="540" y="%center_y%" placement="4"/>
+-			</image>
+-
+-			<image>
+-				<image resource="splash_logo"/>
+-				<placement x="540" y="%center_y%" placement="4"/>
+-			</image>
+-
+-			<text style="menu_text">
+-				<placement x="540" y="%of%" placement="4"/>
+-				<font resource="of" color="#ffffff"/>
+-				<text>OrangeFox</text>
+-			</text>
+-
+-			<text style="menu_text">
+-				<placement x="540" y="%rec%" placement="4"/>
+-				<font resource="recovery" color="#ffffff"/>
+-				<text>Recovery</text>
+-			</text>
 +			<console>
 +				<placement x="20" y="%console_y_pos%" w="1040" h="%console_height%"/>
 +				<font resource="console_font" color="%console_fg_color%" spacing="2"/>
 +			</console>
-+		</page>
-+	</pages>
+ 		</page>
+ 	</pages>
  </recovery>
