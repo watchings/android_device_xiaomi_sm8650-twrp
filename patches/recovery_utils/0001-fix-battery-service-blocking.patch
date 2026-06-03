@@ -1,0 +1,17 @@
+diff --git a/recovery_utils/battery_utils.cpp b/recovery_utils/battery_utils.cpp
+index 6b126bd..400a3f6 100644
+--- a/recovery_utils/battery_utils.cpp
++++ b/recovery_utils/battery_utils.cpp
+@@ -36,8 +36,10 @@ BatteryInfo GetBatteryInfo() {
+   auto service_name = IHealth::descriptor + "/default"s;
+   std::shared_ptr<IHealth> health;
+   if (AServiceManager_isDeclared(service_name.c_str())) {
+-    ndk::SpAIBinder binder(AServiceManager_waitForService(service_name.c_str()));
+-    health = IHealth::fromBinder(binder);
++    ndk::SpAIBinder binder(AServiceManager_checkService(service_name.c_str()));
++    if (binder.get() != nullptr) {
++      health = IHealth::fromBinder(binder);
++    }
+   }
+   if (health == nullptr) {
+     LOG(INFO) << "Unable to get AIDL health service, trying HIDL...";
