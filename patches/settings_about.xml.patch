@@ -1,6 +1,6 @@
---- a/gui/theme/portrait_hdpi/pages/settings.xml	2026-06-03 07:45:29.134949815 +0000
-+++ b/gui/theme/portrait_hdpi/pages/settings.xml	2026-06-03 07:45:30.059503965 +0000
-@@ -1195,6 +1195,17 @@
+--- a/gui/theme/portrait_hdpi/pages/settings.xml	2026-06-03 07:47:42.701257070 +0000
++++ b/gui/theme/portrait_hdpi/pages/settings.xml	2026-06-03 07:47:42.716141878 +0000
+@@ -1195,6 +1195,22 @@
  
  			<template name="gestures"/>
  
@@ -12,7 +12,12 @@
 +
 +			<text style="about_info">
 +				<placement x="%card_txt_x%" y="1860+%cutout_w%"/>
-+				<text>SM8650 TWRP by GitFASTBOOT, debugged by GitHub Copilot</text>
++				<text>GitFASTBOOT &lt;ahmedshahinx0x@gmail.com&gt;</text>
++			</text>
++
++			<text style="about_info">
++				<placement x="%card_txt_x%" y="1920+%cutout_w%"/>
++				<text>GitHub Copilot (splash/patches)</text>
 +			</text>
 +
  			<action>
