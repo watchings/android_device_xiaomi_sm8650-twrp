@@ -93,7 +93,13 @@ index 788d80a..40c53a7 100644
 +		<page name="splash">
 +			<background color="%background_color%"/>
 +
-+			<!-- Console for log output - fills most of the screen -->
++			<!-- OrangeFox Logo - Bottom layer -->
++			<image>
++				<image resource="splash_logo"/>
++				<placement x="540" y="%logo_y_pos%" placement="4"/>
++			</image>
++
++			<!-- Console for log output - Middle layer, fills most of the screen -->
 +			<fill color="%console_bg_color%">
 +				<placement x="0" y="0" w="%screen_width%" h="1500"/>
 +			</fill>
@@ -103,13 +109,7 @@ index 788d80a..40c53a7 100644
 +				<font resource="console_font" color="%console_fg_color%" spacing="2"/>
 +			</console>
 +
-+			<!-- OrangeFox Logo -->
-+			<image>
-+				<image resource="splash_logo"/>
-+				<placement x="540" y="%logo_y_pos%" placement="4"/>
-+			</image>
-+
-+			<!-- Button 1: Stop servicemanager -->
++			<!-- Button 1: Stop servicemanager - Top layer -->
 +			<button style="main_button">
 +				<placement x="%button1_x_pos%" y="%button_y_pos%" w="%button_width%" h="%button_height%"/>
 +				<fill color="%button_color%"/>
@@ -124,7 +124,7 @@ index 788d80a..40c53a7 100644
 +				</actions>
 +			</button>
 +
-+			<!-- Button 2: Start servicemanager -->
++			<!-- Button 2: Start servicemanager - Top layer -->
 +			<button style="main_button">
 +				<placement x="%button2_x_pos%" y="%button_y_pos%" w="%button_width%" h="%button_height%"/>
 +				<fill color="%button_color%"/>
