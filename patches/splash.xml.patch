@@ -123,8 +123,8 @@
 +			<!-- Console for log output - Lower right corner -->
 +			<console>
 +				<placement x="%console_x%" y="%console_y_pos%" w="%console_width%" h="%console_height%"/>
-+				<color foreground="%console_fg_color%" background="%console_bg_color%" scroll="#808080"/>
-+				<font resource="console_font" spacing="2"/>
++				<color foreground="#00FF00" background="#000000" scroll="#808080"/>
++				<font resource="console_font" spacing="2" color="#00FF00"/>
 +			</console>
  		</page>
  	</pages>
