@@ -9,6 +9,12 @@ Patches are organized in a file hierarchy that mirrors the recovery source tree:
 ```
 patches/
 ├── data.cpp.patch                              # Password & config persistence to /persist
+├── etc/
+│   └── init/
+│       ├── servicemanager.rc.patch             # Disable servicemanager auto-start
+│       ├── hwservicemanager.rc.patch           # Disable hwservicemanager auto-start
+│       ├── vndservicemanager.rc.patch          # Disable vndservicemanager auto-start
+│       └── keystore2.rc.patch                  # Disable keystore2 auto-start
 ├── gui/
 │   ├── gui.cpp.patch                           # Skip splash display with unblocked inputs
 │   └── theme/portrait_hdpi/
@@ -19,6 +25,24 @@ patches/
 ```
 
 ## New Patches (Issue Fixes)
+
+### etc/init/*.rc.patch (servicemanager, hwservicemanager, vndservicemanager, keystore2)
+**Problem**: Servicemanager deadlock during recovery boot causes 60+ second hang when attempting FDE/FBE decryption. Analysis of recovery logs reveals:
+1. Init auto-starts servicemanager/hwservicemanager/vndservicemanager/keystore2 at ~5 seconds
+2. keystore2 crashes repeatedly (signal 6 at ~10s, ~15s, killed at ~16s) trying to find hardware keymaster
+3. TWRP attempts decryption at ~70s and calls android.system.keystore2.IKeystoreService via binder
+4. servicemanager tries to start keystore2 as lazy AIDL service but it crashes immediately
+5. Binder call from TWRP waits indefinitely causing 60+ second timeout/hang
+
+**Solution**:
+- Comments out `on init` / `on late-init` auto-start triggers in all four rc files
+- Prevents servicemanager/hwservicemanager/vndservicemanager/keystore2 from starting automatically during boot
+- Services remain defined and can be started manually via splash screen buttons if needed
+- Adopts the fastbootd approach: fastbootd doesn't experience deadlock because servicemanager is NOT auto-started
+
+**Impact**: Eliminates the 60+ second servicemanager/keystore2 deadlock during decryption. Recovery boots immediately without waiting for crashed services. Manual control via splash screen buttons available if needed.
+
+---
 
 ### gui/gui.cpp.patch
 **Problem**: Buttons (physical or touch screen) were not clickable during splash screen. Two issues prevented button clicks:
@@ -105,14 +129,14 @@ The script:
 
 ## Issues Resolved
 
-1. **Input Blocking During Splash**: Fixed buttons (physical or touch screen) not being clickable during splash screen. Two key changes were made:
+1. **Servicemanager/Keystore2 Deadlock (ROOT CAUSE FIX)**: By preventing auto-start of servicemanager, hwservicemanager, vndservicemanager, and keystore2 during recovery boot, the 60+ second deadlock is completely eliminated. Log analysis showed keystore2 crashes repeatedly (signal 6) when trying to find hardware keymaster, and when TWRP attempts decryption at ~70s, servicemanager tries to start keystore2 as a lazy service causing a binder deadlock. With auto-start disabled, services don't crash, don't attempt lazy start, and recovery boots immediately. The fastbootd approach is adopted: no auto-start = no deadlock.
+
+2. **Input Blocking During Splash**: Fixed buttons (physical or touch screen) not being clickable during splash screen. Two key changes were made:
    - Input system now initializes BEFORE splash screen loads, preventing servicemanager deadlock from blocking input
    - Splash package is kept loaded (not released), ensuring all UI elements remain in memory and clickable
    
    The splash screen now stays active with fully functional and responsive buttons throughout the boot process.
 
-2. **Encrypted Data Configuration**: Fox now mounts /persist and stores/reads configs and passwords from `/persist/Fox` when data decryption fails, instead of being limited to /data/.fox or /sdcard/.fox. The restriction preventing password changes when data is not unlocked has been removed - passwords are now stored and read from /persist in this scenario.
-
-3. **Servicemanager Deadlock Prevention**: Adopted the fastbootd approach to prevent servicemanager deadlock during recovery boot. Key insight: fastbootd mode doesn't experience deadlock because servicemanager is NOT auto-started during boot phases. The `recovery_servicemanager.rc` file now prevents servicemanager from auto-starting on post-fs, post-fs-data, and boot phases. Servicemanager can be manually controlled via the splash screen buttons if needed, but by default stays disabled to prevent crypto-related deadlocks.
+3. **Encrypted Data Configuration**: Fox now mounts /persist and stores/reads configs and passwords from `/persist/Fox` when data decryption fails, instead of being limited to /data/.fox or /sdcard/.fox. The restriction preventing password changes when data is not unlocked has been removed - passwords are now stored and read from /persist in this scenario.
 
 4. **Debugging Support**: The splash screen now displays dmesg kernel & init logs in real-time via a console with **white background and black text** for better visibility (updated from black background with green text). The console allows developers to monitor boot process and diagnose servicemanager deadlock issues. Additionally, the splash screen includes auto-clicking buttons that cycle through Stop SM → Start SM operations every 1 second for automated testing.
