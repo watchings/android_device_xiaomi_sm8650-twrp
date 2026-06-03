@@ -4,6 +4,17 @@ This directory contains patches for OrangeFox Recovery to replace the splash scr
 
 ## Patches
 
+### gui.cpp.patch
+
+Fixes button clickability during splash screen by:
+- Moving `ev_init()` (touch input initialization) **before** loading the splash screen
+- Keeping the splash screen loaded and interactive for 3 seconds (30 frames at 10 FPS)
+- Calling `PageManager::Update()` and `PageManager::Render()` in a loop to process touch events and render updates
+
+**Without this patch:** The original code loads the splash, renders it once, releases it, and only then initializes touch input. This makes buttons completely unresponsive.
+
+**With this patch:** Touch input is initialized first, then the splash remains loaded and updates continuously for 3 seconds, allowing buttons to be clicked and console output to be displayed in real-time.
+
 ### splash.xml.patch
 
 Replaces the OrangeFox splash screen with a debug interface that includes:
@@ -35,14 +46,19 @@ Replaces the OrangeFox splash screen with a debug interface that includes:
    - Uses Roboto-Regular font at 18pt for readability
    - Positioned at lower half of screen (y=960, height=940)
    - Fills the entire lower half of the screen
+   - **Fixed:** Now uses direct color values (`#00FF00` for green foreground, `#000000` for black background) to ensure console text is visible
 
 ## How It Works
 
-The patch modifies `gui/theme/portrait_hdpi/splash.xml` to:
-- Replace the graphical splash screen with a console displaying log output
-- Add two interactive buttons for manually controlling servicemanager
-- Provide real-time visibility into recovery operations
-- Allow debugging of servicemanager-related issues
+The patches work together to create a functional debug interface:
+
+1. **gui.cpp.patch** ensures touch input is initialized before the splash loads, and keeps the splash interactive for 3 seconds with continuous updates
+2. **splash.xml.patch** defines the visual layout with clickable buttons and a console widget with proper colors
+
+The combined effect allows developers to:
+- See real-time log output during the critical first 3 seconds of recovery boot
+- Click buttons to manually control servicemanager if needed
+- Debug servicemanager-related issues during crypto operations
 
 ## Application
 

@@ -30,6 +30,12 @@ All previous patches that were not working have been removed:
 
 ### New Files
 
+**patches/gui.cpp.patch**
+- Fixes button clickability during splash screen
+- Moves touch input initialization (`ev_init()`) before loading splash
+- Keeps splash loaded and interactive for 3 seconds with continuous updates
+- Calls `PageManager::Update()` and `PageManager::Render()` in a loop to process events
+
 **patches/splash.xml.patch**
 - Replaces the OrangeFox splash screen with a debug interface
 - Provides a console showing real-time log output
@@ -74,15 +80,30 @@ This patch modifies `gui/theme/portrait_hdpi/splash.xml` to create a debug splas
    - Positioned at lower half of screen starting at y=960
    - Uses Roboto-Regular font at 18pt for optimal readability
    - Fills the entire lower half of the 1920px screen
+   - **Console Colors:** Uses direct color values (`#00FF00` for green foreground, `#000000` for black background) to ensure text is visible
 
 ## Purpose
 
 This debug interface allows developers to:
-- Monitor recovery boot process in real-time
+- Monitor recovery boot process in real-time during the first 3 seconds
 - See what's happening during crypto operations
-- Manually stop servicemanager if it causes deadlocks
-- Restart servicemanager when needed
+- Manually stop servicemanager if it causes deadlocks (via clickable buttons)
+- Restart servicemanager when needed (via clickable buttons)
 - Debug timing and service-related issues
+
+## Technical Details
+
+### Why were these patches needed?
+
+**Problem 1: Buttons not clickable**
+- Original code sequence: Load splash → Render once → Release splash → Initialize touch input
+- Result: By the time touch input was ready, the splash was already gone
+- Solution: Initialize touch input FIRST, then keep splash loaded with update loop
+
+**Problem 2: Console all black**
+- Console widget uses variable references for colors (`%console_fg_color%`)
+- Variables weren't being properly resolved during early boot
+- Solution: Use direct hex color values instead (`#00FF00`, `#000000`)
 
 ## Build Integration
 
