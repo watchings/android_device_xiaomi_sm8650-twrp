@@ -1,30 +1,17 @@
 diff --git a/gui/gui.cpp b/gui/gui.cpp
-index 71bbc96..11d6a83 100644
+index 17853f7..835bd87 100644
 --- a/gui/gui.cpp
 +++ b/gui/gui.cpp
-@@ -898,22 +898,50 @@ extern "C" int gui_init(void)
+@@ -2,21 +2,38 @@
          blankTimer.resetTimerAndUnblank();
  #endif
  
--	// load and show splash screen
--	if (PageManager::LoadPackage("splash", TWRES "splash.xml", "splash")) {
--		LOGERR("Failed to load splash screen XML.\n");
--	}
--	else {
--		PageManager::SelectPackage("splash");
--		PageManager::Render();
--		flip();
--		PageManager::ReleasePackage("splash");
--	}
--
+-// load and show splash screen
 +        // Initialize input IMMEDIATELY to accept events from the very beginning
 +        // This prevents input from being blocked by servicemanager deadlock
- #ifdef TW_DELAY_TOUCH_INIT_MS
--	usleep(TW_DELAY_TOUCH_INIT_MS);
++#ifdef TW_DELAY_TOUCH_INIT_MS
 +        usleep(TW_DELAY_TOUCH_INIT_MS);
- #endif
--	ev_init();
--	return 0;
++#endif
 +        ev_init();
 +        input_handler.init();
 +
@@ -33,37 +20,32 @@ index 71bbc96..11d6a83 100644
 +        PageManager::Update();
 +        blankTimer.checkForTimeout();
 +
-+        // load and show splash screen
-+        if (PageManager::LoadPackage("splash", TWRES "splash.xml", "splash")) {
-+        	LOGERR("Failed to load splash screen XML.\n");
-+        }
-+        else {
-+        	// Process events immediately after loading, before selecting
-+        	PageManager::Update();
-+        	blankTimer.checkForTimeout();
++// load and show splash screen (but skip displaying it)
+ if (PageManager::LoadPackage("splash", TWRES "splash.xml", "splash")) {
+ LOGERR("Failed to load splash screen XML.\n");
+ }
+ else {
++// Process events immediately after loading
++PageManager::Update();
++blankTimer.checkForTimeout();
 +
-+        	PageManager::SelectPackage("splash");
+ PageManager::SelectPackage("splash");
+-PageManager::Render();
+-flip();
 +
-+        	// Process events immediately after selecting
-+        	PageManager::Update();
-+        	blankTimer.checkForTimeout();
++// Process events immediately after selecting
++PageManager::Update();
++blankTimer.checkForTimeout();
 +
-+        	// Keep splash screen loaded and interactive for 3 seconds
-+        	// Input events are processed CONTINUOUSLY to prevent blocking
-+        	// This allows power button to work even if servicemanager deadlocks
-+        	for (int i = 0; i < 30; i++) {
-+        		input_handler.processInput(10); // Process input with 10ms timeout
-+        		PageManager::Update();
-+        		PageManager::Render();
-+        		flip();
-+        		blankTimer.checkForTimeout();
-+        		usleep(100000); // 100ms sleep = 10 FPS refresh
-+        	}
-+
-+        	// Now release the splash screen
-+        	PageManager::ReleasePackage("splash");
-+        }
-+        return 0;
++// Skip the splash display - immediately release it
++// No rendering or display loop - inputs remain unblocked
+ PageManager::ReleasePackage("splash");
+ }
+-
+-#ifdef TW_DELAY_TOUCH_INIT_MS
+-usleep(TW_DELAY_TOUCH_INIT_MS);
+-#endif
+-ev_init();
+ return 0;
  }
  
- extern "C" int gui_loadResources(void)
