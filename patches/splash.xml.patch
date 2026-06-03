@@ -1,7 +1,5 @@
-diff --git a/gui/theme/portrait_hdpi/splash.xml b/gui/theme/portrait_hdpi/splash.xml
-index 788d80a..40c53a7 100644
---- a/gui/theme/portrait_hdpi/splash.xml
-+++ b/gui/theme/portrait_hdpi/splash.xml
+--- a/gui/theme/portrait_hdpi/splash.xml	2026-06-03 07:37:43.995611226 +0000
++++ b/gui/theme/portrait_hdpi/splash.xml	2026-06-03 07:37:43.594655674 +0000
 @@ -1,7 +1,6 @@
  <?xml version="1.0"?>
  <!-- 
@@ -11,11 +9,10 @@ index 788d80a..40c53a7 100644
  -->
  <recovery>
  	<details>
-@@ -10,50 +9,71 @@
- 	</details>
+@@ -11,49 +10,95 @@
  	
  	<resources>
--		<image name="splash_logo" filename="SVG/Logos/logo_o.svg" retainaspect="1" scale="2.0"/>
+ 		<image name="splash_logo" filename="SVG/Logos/logo_o.svg" retainaspect="1" scale="2.0"/>
 -		<image name="splash_bg" filename="Splash/user" retainaspect="1"/>
 -		<font name="of" filename="InterDisplay-Medium.ttf" size="64"/>
 -		<font name="recovery" filename="InterDisplay-Regular.ttf" size="52"/>
@@ -35,13 +32,20 @@ index 788d80a..40c53a7 100644
 +		<variable name="button_text_color" value="#FFFFFF"/>
 +		<variable name="console_bg_color" value="#000000"/>
 +		<variable name="console_fg_color" value="#00FF00"/>
++		<variable name="line_color" value="#FF6600"/>
 +		<variable name="button_width" value="450"/>
 +		<variable name="button_height" value="100"/>
 +		<variable name="button_y_pos" value="200"/>
 +		<variable name="button1_x_pos" value="80"/>
 +		<variable name="button2_x_pos" value="550"/>
++		<variable name="logo_size" value="400"/>
++		<variable name="logo_x" value="40"/>
++		<variable name="logo_y" value="1480"/>
++		<variable name="console_x" value="540"/>
 +		<variable name="console_y_pos" value="960"/>
++		<variable name="console_width" value="520"/>
 +		<variable name="console_height" value="940"/>
++		<variable name="divider_y" value="350"/>
  	</variables>
  
  	<pages>
@@ -50,7 +54,21 @@ index 788d80a..40c53a7 100644
  
 -			<fill color="%header_color%">
 -				<placement x="0" y="0" w="%screen_width%" h="%screen_height%"/>
-+			<!-- Button 1: Stop servicemanager - Upper half -->
++			<!-- Horizontal line below buttons -->
++			<fill color="%line_color%">
++				<placement x="0" y="%divider_y%" w="%screen_width%" h="3"/>
+ 			</fill>
+ 
+-			<image>
+-				<image resource="splash_bg"/>
+-				<placement x="540" y="%center_y%" placement="4"/>
+-			</image>
++			<!-- Vertical line between logo and console -->
++			<fill color="%line_color%">
++				<placement x="520" y="%console_y_pos%" w="3" h="%console_height%"/>
++			</fill>
+ 
++			<!-- Button 1: Stop servicemanager - Upper section -->
 +			<button>
 +				<placement x="%button1_x_pos%" y="%button_y_pos%" w="%button_width%" h="%button_height%"/>
 +				<fill color="%button_color%"/>
@@ -66,7 +84,7 @@ index 788d80a..40c53a7 100644
 +				</actions>
 +			</button>
 +
-+			<!-- Button 2: Start servicemanager - Upper half -->
++			<!-- Button 2: Start servicemanager - Upper section -->
 +			<button>
 +				<placement x="%button2_x_pos%" y="%button_y_pos%" w="%button_width%" h="%button_height%"/>
 +				<fill color="%button_color%"/>
@@ -79,21 +97,13 @@ index 788d80a..40c53a7 100644
 +				</actions>
 +			</button>
 +
-+			<!-- Console for log output - Lower half -->
-+			<fill color="%console_bg_color%">
-+				<placement x="0" y="%console_y_pos%" w="%screen_width%" h="%console_height%"/>
- 			</fill>
++			<!-- OrangeFox Logo - Lower left corner -->
+ 			<image>
+ 				<image resource="splash_logo"/>
+-				<placement x="540" y="%center_y%" placement="4"/>
++				<placement x="%logo_x%" y="%logo_y%" w="%logo_size%" h="%logo_size%"/>
+ 			</image>
  
--			<image>
--				<image resource="splash_bg"/>
--				<placement x="540" y="%center_y%" placement="4"/>
--			</image>
--
--			<image>
--				<image resource="splash_logo"/>
--				<placement x="540" y="%center_y%" placement="4"/>
--			</image>
--
 -			<text style="menu_text">
 -				<placement x="540" y="%of%" placement="4"/>
 -				<font resource="of" color="#ffffff"/>
@@ -105,8 +115,14 @@ index 788d80a..40c53a7 100644
 -				<font resource="recovery" color="#ffffff"/>
 -				<text>Recovery</text>
 -			</text>
++			<!-- Console background - Lower right corner -->
++			<fill color="%console_bg_color%">
++				<placement x="%console_x%" y="%console_y_pos%" w="%console_width%" h="%console_height%"/>
++			</fill>
++
++			<!-- Console for log output - Lower right corner -->
 +			<console>
-+				<placement x="20" y="%console_y_pos%" w="1040" h="%console_height%"/>
++				<placement x="%console_x%" y="%console_y_pos%" w="%console_width%" h="%console_height%"/>
 +				<color foreground="%console_fg_color%" background="%console_bg_color%" scroll="#808080"/>
 +				<font resource="console_font" spacing="2"/>
 +			</console>
