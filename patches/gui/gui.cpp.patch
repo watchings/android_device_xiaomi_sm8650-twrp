@@ -1,8 +1,8 @@
 diff --git a/gui/gui.cpp b/gui/gui.cpp
-index 874cdd9..cd73b74 100755
+index 71bbc96..347b410 100644
 --- a/gui/gui.cpp
 +++ b/gui/gui.cpp
-@@ -766,21 +766,37 @@ extern "C" int gui_init(void)
+@@ -898,21 +898,37 @@ extern "C" int gui_init(void)
          blankTimer.resetTimerAndUnblank();
  #endif
  

@@ -20,19 +20,19 @@ patches/
 
 ## New Patches (Issue Fixes)
 
-### gui/gui.cpp.patch (Merged Patch - Updated)
-**Problem**: Buttons (physical or touch screen) were not clickable during splash screen. Clicks made during splash were queued and only processed after the splash deadlock released. Additionally, the splash screen caused unnecessary boot delays.
+### gui/gui.cpp.patch
+**Problem**: Buttons (physical or touch screen) were not clickable during splash screen. Clicks made during splash were queued and only processed after the splash deadlock released due to servicemanager blocking the input initialization.
 
-**Solution** (merged and updated):
+**Solution**:
 - Initializes event input system (ev_init) and input_handler **before** loading splash screen
 - Moves input initialization to occur before splash loading (prevents servicemanager deadlock blocking)
 - Processes pending input events before loading splash screen
-- Adds event processing at multiple points: before loading, after loading, after selecting splash
-- **Skips the splash display entirely** - no rendering loop, no delay
-- Immediately releases the splash package after loading/selecting
+- Adds event processing at multiple points: before loading, after loading, after rendering
+- **Displays the splash screen normally** with Render() and flip() calls
+- Keeps inputs responsive during splash display through continuous PageManager::Update() calls
 - Inputs remain completely unblocked throughout the boot process
 
-**Impact**: Buttons are now clickable immediately from boot, with continuous event processing to prevent blocking even if servicemanager deadlocks. The splash screen is skipped entirely, eliminating boot delays while maintaining full input responsiveness.
+**Impact**: Buttons are now clickable immediately from boot, with continuous event processing to prevent blocking even if servicemanager deadlocks. The splash screen is displayed normally while maintaining full input responsiveness.
 
 ---
 
@@ -73,9 +73,11 @@ patches/
 
 ### gui/theme/portrait_hdpi/splash.xml.patch
 Customizes the splash screen layout with debug features including:
-- Interactive buttons to control servicemanager
-- Real-time console output display
-- Diagnostic tools for debugging crypto operations
+- Interactive buttons to control servicemanager (Stop SM / Start SM)
+- Real-time console output displaying **dmesg kernel & init logs**
+- BLACK console background with GREEN text for visibility
+- OrangeFox branding and logo preserved
+- Diagnostic tools for debugging crypto operations and boot issues
 
 ## Applying Patches
 
@@ -99,6 +101,8 @@ The script:
 
 ## Issues Resolved
 
-1. **Input Blocking During Splash**: Fixed buttons (physical or touch screen) not being clickable during splash screen. The solution initializes inputs before splash loading and completely skips the splash display, eliminating both the input blocking issue and unnecessary boot delays.
+1. **Input Blocking During Splash**: Fixed buttons (physical or touch screen) not being clickable during splash screen. The solution initializes inputs before splash loading and keeps event processing active throughout splash display, ensuring inputs remain responsive even if servicemanager deadlocks. The splash screen is now displayed normally while maintaining full input responsiveness.
 
 2. **Encrypted Data Configuration**: Fox now mounts /persist and stores/reads configs and passwords from `/persist/Fox` when data decryption fails, instead of being limited to /data/.fox or /sdcard/.fox. The restriction preventing password changes when data is not unlocked has been removed - passwords are now stored and read from /persist in this scenario.
+
+3. **Debugging Support**: The splash screen now displays dmesg kernel & init logs in real-time via a console with black background and green text, allowing developers to monitor boot process and diagnose servicemanager deadlock issues.

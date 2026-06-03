@@ -1,13 +1,13 @@
 diff --git a/gui/theme/portrait_hdpi/splash.xml b/gui/theme/portrait_hdpi/splash.xml
-index 788d80a..0b4fd4e 100644
+index 788d80a..4c9c3a5 100644
 --- a/gui/theme/portrait_hdpi/splash.xml
 +++ b/gui/theme/portrait_hdpi/splash.xml
-@@ -1,59 +1,104 @@
+@@ -1,59 +1,114 @@
  <?xml version="1.0"?>
  <!-- 
 -	OrangeFox Splash by OrangeFox Team
--    Background logo idea by KMP design
-+OrangeFox Debug Splash - Shows log output and servicemanager controls
++OrangeFox Debug Splash - Shows dmesg kernel & init logs with servicemanager controls
+     Background logo idea by KMP design
  -->
  <recovery>
 -	<details>
@@ -69,52 +69,66 @@ index 788d80a..0b4fd4e 100644
 +
 +<resources>
 +<image name="splash_logo" filename="SVG/Logos/logo_o.svg" retainaspect="1" scale="2.0"/>
-+<font name="console_font" filename="Roboto-Regular.ttf" size="18"/>
-+<font name="button_font" filename="Roboto-Regular.ttf" size="28"/>
++<image name="splash_bg" filename="Splash/user" retainaspect="1"/>
++<font name="of" filename="InterDisplay-Medium.ttf" size="64"/>
++<font name="recovery" filename="InterDisplay-Regular.ttf" size="52"/>
++<font name="console_font" filename="Roboto-Regular.ttf" size="16"/>
++<font name="button_font" filename="Roboto-Regular.ttf" size="24"/>
 +</resources>
 +
 +<variables>
++<variable name="of" value="%screen_h%-400"/>
++<variable name="rec" value="%screen_h%-320"/>
 +<variable name="screen_width" value="1080"/>
 +<variable name="screen_height" value="1920"/>
++<variable name="header_color" value="#000000"/>
 +<variable name="background_color" value="#000000"/>
 +<variable name="button_color" value="#FF6600"/>
 +<variable name="button_highlight_color" value="#FF8833"/>
 +<variable name="button_text_color" value="#FFFFFF"/>
-+<variable name="console_bg_color" value="#FFFFFF"/>
++<variable name="console_bg_color" value="#000000"/>
 +<variable name="console_fg_color" value="#00FF00"/>
 +<variable name="line_color" value="#FF6600"/>
-+<variable name="button_width" value="450"/>
-+<variable name="button_height" value="100"/>
-+<variable name="button_y_pos" value="200"/>
-+<variable name="button1_x_pos" value="80"/>
-+<variable name="button2_x_pos" value="550"/>
-+<variable name="logo_size" value="400"/>
-+<variable name="logo_x" value="40"/>
-+<variable name="logo_y" value="1480"/>
-+<variable name="console_x" value="540"/>
-+<variable name="console_y_pos" value="960"/>
-+<variable name="console_width" value="520"/>
-+<variable name="console_height" value="940"/>
-+<variable name="divider_y" value="350"/>
 +</variables>
 +
 +<pages>
 +<page name="splash">
 +<background color="%background_color%"/>
 +
-+<!-- Horizontal line below buttons -->
-+<fill color="%line_color%">
-+<placement x="0" y="%divider_y%" w="%screen_width%" h="3"/>
++<fill color="%header_color%">
++<placement x="0" y="0" w="%screen_width%" h="%screen_height%"/>
 +</fill>
 +
-+<!-- Vertical line between logo and console -->
++<image>
++<image resource="splash_bg"/>
++<placement x="540" y="540" placement="4"/>
++</image>
++
++<image>
++<image resource="splash_logo"/>
++<placement x="540" y="540" placement="4"/>
++</image>
++
++<text style="menu_text">
++<placement x="540" y="%of%" placement="4"/>
++<font resource="of" color="#ffffff"/>
++<text>OrangeFox</text>
++</text>
++
++<text style="menu_text">
++<placement x="540" y="%rec%" placement="4"/>
++<font resource="recovery" color="#ffffff"/>
++<text>Recovery</text>
++</text>
++
++<!-- Horizontal divider line -->
 +<fill color="%line_color%">
-+<placement x="520" y="%console_y_pos%" w="3" h="%console_height%"/>
++<placement x="0" y="1200" w="%screen_width%" h="3"/>
 +</fill>
 +
-+<!-- Button 1: Stop servicemanager - Upper section -->
++<!-- Button 1: Stop servicemanager -->
 +<button>
-+<placement x="%button1_x_pos%" y="%button_y_pos%" w="%button_width%" h="%button_height%"/>
++<placement x="80" y="1220" w="450" h="80"/>
 +<fill color="%button_color%"/>
 +<text>Stop SM</text>
 +<font resource="button_font" color="%button_text_color%"/>
@@ -124,40 +138,35 @@ index 788d80a..0b4fd4e 100644
 +<action function="cmd">setprop ctl.stop hwservicemanager</action>
 +<action function="cmd">setprop ctl.stop vndservicemanager</action>
 +<action function="cmd">setprop ctl.stop keystore2</action>
-+<action function="cmd">echo "Stopped servicemanager and related services" >> /tmp/recovery.log</action>
 +</actions>
 +</button>
 +
-+<!-- Button 2: Start servicemanager - Upper section -->
++<!-- Button 2: Start servicemanager -->
 +<button>
-+<placement x="%button2_x_pos%" y="%button_y_pos%" w="%button_width%" h="%button_height%"/>
++<placement x="550" y="1220" w="450" h="80"/>
 +<fill color="%button_color%"/>
 +<text>Start SM</text>
 +<font resource="button_font" color="%button_text_color%"/>
 +<highlight color="%button_highlight_color%"/>
 +<actions>
 +<action function="cmd">setprop ctl.start servicemanager</action>
-+<action function="cmd">echo "Started servicemanager" >> /tmp/recovery.log</action>
 +</actions>
 +</button>
 +
-+<!-- OrangeFox Logo - Lower left corner -->
-+<image>
-+<image resource="splash_logo"/>
-+<placement x="%logo_x%" y="%logo_y%" w="%logo_size%" h="%logo_size%"/>
-+</image>
-+
-+<!-- Console background - Lower right corner -->
-+<fill color="%console_bg_color%">
-+<placement x="%console_x%" y="%console_y_pos%" w="%console_width%" h="%console_height%"/>
-+</fill>
-+
-+<!-- Console for log output - Lower right corner with WHITE background and GREEN text -->
++<!-- Console for dmesg kernel & init log output - BLACK background with GREEN text -->
 +<console>
-+<placement x="%console_x%" y="%console_y_pos%" w="%console_width%" h="%console_height%"/>
-+<color foreground="#00FF00" background="#FFFFFF" scroll="#808080"/>
-+<font resource="console_font" spacing="2" color="#00FF00"/>
++<placement x="40" y="1320" w="1000" h="560"/>
++<color foreground="%console_fg_color%" background="%console_bg_color%" scroll="#808080"/>
++<font resource="console_font" spacing="2" color="%console_fg_color%"/>
 +</console>
++
++<!-- Action to display dmesg kernel & init logs on page load -->
++<action>
++<touch/>
++<actions>
++<action function="cmd">dmesg -w &</action>
++</actions>
++</action>
 +</page>
 +</pages>
  </recovery>
