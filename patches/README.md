@@ -26,6 +26,33 @@ patches/
 
 ## New Patches (Issue Fixes)
 
+### recovery_utils/0001-fix-battery-service-blocking.patch
+**Problem**: Recovery stuck at splash screen when `TW_INCLUDE_CRYPTO := true` is set. Root cause analysis:
+1. The etc/init/*.rc patches disable servicemanager, hwservicemanager, vndservicemanager, and keystore2 from auto-starting
+2. OrangeFox recovery GUI initialization calls `GetBatteryInfo()` in a background monitoring thread
+3. `GetBatteryInfo()` uses `AServiceManager_waitForService()` to get the health service from servicemanager
+4. This call **blocks indefinitely** waiting for the health service because servicemanager is not running
+5. The splash screen hangs forever waiting for the battery monitoring thread to complete
+
+**Evidence from dmesg.txt**:
+```
+[15.543247] init: wait for '/sys/class/power_supply/battery' timed out and took 5000ms
+[16.269509] init: ... started service 'recovery' has pid 321
+```
+- No servicemanager processes start in the log (disabled by etc/init patches)
+- Recovery starts but gets stuck in `AServiceManager_waitForService()` blocking call
+
+**Solution**:
+- Changes `AServiceManager_waitForService()` → `AServiceManager_checkService()` in battery_utils.cpp
+- `waitForService()` blocks indefinitely until service is available
+- `checkService()` returns immediately, NULL if service not available
+- Adds null check before using the binder
+- Recovery continues with HIDL health service fallback or default values
+
+**Impact**: Recovery no longer hangs at splash screen. Battery monitoring gracefully degrades when servicemanager is not running. User can proceed with decryption/recovery operations immediately.
+
+---
+
 ### etc/init/*.rc.patch (servicemanager, hwservicemanager, vndservicemanager, keystore2)
 **Problem**: Servicemanager deadlock during recovery boot causes 60+ second hang when attempting FDE/FBE decryption. Analysis of recovery logs reveals:
 1. Init auto-starts servicemanager/hwservicemanager/vndservicemanager/keystore2 at ~5 seconds
@@ -41,6 +68,8 @@ patches/
 - Adopts the fastbootd approach: fastbootd doesn't experience deadlock because servicemanager is NOT auto-started
 
 **Impact**: Eliminates the 60+ second servicemanager/keystore2 deadlock during decryption. Recovery boots immediately without waiting for crashed services. Manual control via splash screen buttons available if needed.
+
+**NOTE**: This patch series introduced a new issue (splash screen hang) which is fixed by the battery_utils.cpp patch above.
 
 ---
 
