@@ -1,8 +1,8 @@
 diff --git a/gui/gui.cpp b/gui/gui.cpp
-index 874cdd9f..12dc4803 100755
+index 874cdd9..cd73b74 100755
 --- a/gui/gui.cpp
 +++ b/gui/gui.cpp
-@@ -766,21 +766,38 @@ extern "C" int gui_init(void)
+@@ -766,21 +766,37 @@ extern "C" int gui_init(void)
          blankTimer.resetTimerAndUnblank();
  #endif
  
@@ -16,11 +16,10 @@ index 874cdd9f..12dc4803 100755
 +        input_handler.init();
 +
 +        // Process any pending input events before loading splash
-+        // This ensures power button presses are handled even if splash loading hangs
 +        PageManager::Update();
 +        blankTimer.checkForTimeout();
 +
-+	// load and show splash screen (but skip displaying it)
++	// load and show splash screen with unblocked input
  	if (PageManager::LoadPackage("splash", TWRES "splash.xml", "splash")) {
  		LOGERR("Failed to load splash screen XML.\n");
  	}
@@ -30,15 +29,13 @@ index 874cdd9f..12dc4803 100755
 +		blankTimer.checkForTimeout();
 +
  		PageManager::SelectPackage("splash");
--		PageManager::Render();
--		flip();
+ 		PageManager::Render();
+ 		flip();
 +
-+		// Process events immediately after selecting
++		// Process events during splash display to keep inputs responsive
 +		PageManager::Update();
 +		blankTimer.checkForTimeout();
 +
-+		// Skip the splash display - immediately release it
-+		// No rendering or display loop - inputs remain unblocked
  		PageManager::ReleasePackage("splash");
  	}
 -
