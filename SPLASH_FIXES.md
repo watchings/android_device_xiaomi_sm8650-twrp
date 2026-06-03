@@ -25,8 +25,8 @@ By the time touch input was initialized, the splash screen had already been rele
 
 **Result:** Buttons are now fully clickable, and users can interact with the servicemanager controls during boot.
 
-### Issue 2: Console Log Display All Black
-**Problem:** The console widget showed only a black rectangle with no visible text.
+### Issue 2: Console Log Display Requirements
+**Problem:** The console widget needed to display with white background and green text for better visibility.
 
 **Root Cause:** The splash.xml patch was using TWRP variables for console colors:
 ```xml
@@ -37,11 +37,11 @@ During early boot (splash screen phase), the TWRP variable system may not be ful
 
 **Solution:** Updated `patches/splash.xml.patch` to use direct hexadecimal color values:
 ```xml
-<color foreground="#00FF00" background="#000000" scroll="#808080"/>
+<color foreground="#00FF00" background="#FFFFFF" scroll="#808080"/>
 <font resource="console_font" spacing="2" color="#00FF00"/>
 ```
 
-**Result:** Console now displays bright green text (`#00FF00`) on black background (`#000000`), making log output clearly visible.
+**Result:** Console now displays bright green text (`#00FF00`) on white background (`#FFFFFF`), making log output clearly visible.
 
 ## Technical Details
 
@@ -71,8 +71,8 @@ PageManager::ReleasePackage("splash");
 ### Console Color Resolution (splash.xml.patch)
 
 The console widget in TWRP inherits from `GUIScrollList`, which loads colors from the `<color>` child element in the XML:
-- `foreground` attribute → `mFontColor` (text color)
-- `background` attribute → `mBackgroundColor` (background fill color)
+- `foreground` attribute → `mFontColor` (text color) - Set to `#00FF00` (bright green)
+- `background` attribute → `mBackgroundColor` (background fill color) - Set to `#FFFFFF` (white)
 
 Using direct hex values ensures these colors are properly set regardless of variable resolution timing.
 

@@ -1,8 +1,8 @@
 diff --git a/gui/gui.cpp b/gui/gui.cpp
-index 71bbc96..77f9276 100644
+index 71bbc96..6550d37 100644
 --- a/gui/gui.cpp
 +++ b/gui/gui.cpp
-@@ -898,21 +898,30 @@ extern "C" int gui_init(void)
+@@ -898,21 +898,33 @@ extern "C" int gui_init(void)
          blankTimer.resetTimerAndUnblank();
  #endif
  
@@ -21,11 +21,14 @@ index 71bbc96..77f9276 100644
 -		flip();
 +
 +		// Keep splash screen loaded and interactive for 3 seconds
-+		// This allows buttons to be clickable and console to display
++		// This allows buttons to be clickable, physical buttons to work,
++		// and console to display. Input events (touch and physical buttons)
++		// are processed in the PageManager::Update() call.
 +		for (int i = 0; i < 30; i++) {
 +			PageManager::Update();
 +			PageManager::Render();
 +			flip();
++			blankTimer.checkForTimeout();
 +			usleep(100000); // 100ms sleep = 10 FPS refresh
 +		}
 +
