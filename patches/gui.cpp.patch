@@ -1,7 +1,9 @@
+diff --git a/gui/gui.cpp b/gui/gui.cpp
+index 71bbc96..77f9276 100644
 --- a/gui/gui.cpp
 +++ b/gui/gui.cpp
-@@ -898,20 +898,29 @@ int gui_init(void)
- 	blankTimer.resetTimerAndUnblank();
+@@ -898,21 +898,30 @@ extern "C" int gui_init(void)
+         blankTimer.resetTimerAndUnblank();
  #endif
  
 +#ifdef TW_DELAY_TOUCH_INIT_MS
@@ -37,3 +39,4 @@
 -	ev_init();
  	return 0;
  }
+ 
