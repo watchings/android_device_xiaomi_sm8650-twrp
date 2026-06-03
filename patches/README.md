@@ -21,18 +21,20 @@ patches/
 ## New Patches (Issue Fixes)
 
 ### gui/gui.cpp.patch
-**Problem**: Buttons (physical or touch screen) were not clickable during splash screen. Clicks made during splash were queued and only processed after the splash deadlock released due to servicemanager blocking the input initialization.
+**Problem**: Buttons (physical or touch screen) were not clickable during splash screen. Two issues prevented button clicks:
+1. Input system was initialized AFTER splash screen loaded, causing input to be blocked by servicemanager deadlock
+2. Splash package was released immediately after rendering, destroying all UI elements including buttons
 
 **Solution**:
 - Initializes event input system (ev_init) and input_handler **before** loading splash screen
 - Moves input initialization to occur before splash loading (prevents servicemanager deadlock blocking)
 - Processes pending input events before loading splash screen
 - Adds event processing at multiple points: before loading, after loading, after rendering
-- **Displays the splash screen normally** with Render() and flip() calls
-- Keeps inputs responsive during splash display through continuous PageManager::Update() calls
+- **Keeps the splash package loaded** - does NOT call `PageManager::ReleasePackage("splash")`
+- This ensures buttons remain in memory and clickable throughout the boot process
 - Inputs remain completely unblocked throughout the boot process
 
-**Impact**: Buttons are now clickable immediately from boot, with continuous event processing to prevent blocking even if servicemanager deadlocks. The splash screen is displayed normally while maintaining full input responsiveness.
+**Impact**: Buttons are now clickable immediately from boot. The splash screen stays active with all UI elements (buttons, console) remaining functional and responsive. Input processing is continuous to prevent blocking even if servicemanager deadlocks.
 
 ---
 
@@ -72,12 +74,14 @@ patches/
 ## UI Customization Patches
 
 ### gui/theme/portrait_hdpi/splash.xml.patch
-Customizes the splash screen layout with debug features including:
+Customizes the splash screen layout with debug features and improved functionality:
 - Interactive buttons to control servicemanager (Stop SM / Start SM)
+- **Auto-click functionality**: Buttons automatically click in sequence every 1 second (Stop → wait 1s → Start → repeat)
 - Real-time console output displaying **dmesg kernel & init logs**
-- BLACK console background with GREEN text for visibility
+- **WHITE console background with BLACK text** for better visibility (previously black background with green text)
 - OrangeFox branding and logo preserved
 - Diagnostic tools for debugging crypto operations and boot issues
+- Splash package remains loaded so all UI elements stay functional and clickable
 
 ## Applying Patches
 
@@ -101,8 +105,14 @@ The script:
 
 ## Issues Resolved
 
-1. **Input Blocking During Splash**: Fixed buttons (physical or touch screen) not being clickable during splash screen. The solution initializes inputs before splash loading and keeps event processing active throughout splash display, ensuring inputs remain responsive even if servicemanager deadlocks. The splash screen is now displayed normally while maintaining full input responsiveness.
+1. **Input Blocking During Splash**: Fixed buttons (physical or touch screen) not being clickable during splash screen. Two key changes were made:
+   - Input system now initializes BEFORE splash screen loads, preventing servicemanager deadlock from blocking input
+   - Splash package is kept loaded (not released), ensuring all UI elements remain in memory and clickable
+   
+   The splash screen now stays active with fully functional and responsive buttons throughout the boot process.
 
 2. **Encrypted Data Configuration**: Fox now mounts /persist and stores/reads configs and passwords from `/persist/Fox` when data decryption fails, instead of being limited to /data/.fox or /sdcard/.fox. The restriction preventing password changes when data is not unlocked has been removed - passwords are now stored and read from /persist in this scenario.
 
-3. **Debugging Support**: The splash screen now displays dmesg kernel & init logs in real-time via a console with black background and green text, allowing developers to monitor boot process and diagnose servicemanager deadlock issues.
+3. **Servicemanager Deadlock Prevention**: Adopted the fastbootd approach to prevent servicemanager deadlock during recovery boot. Key insight: fastbootd mode doesn't experience deadlock because servicemanager is NOT auto-started during boot phases. The `recovery_servicemanager.rc` file now prevents servicemanager from auto-starting on post-fs, post-fs-data, and boot phases. Servicemanager can be manually controlled via the splash screen buttons if needed, but by default stays disabled to prevent crypto-related deadlocks.
+
+4. **Debugging Support**: The splash screen now displays dmesg kernel & init logs in real-time via a console with **white background and black text** for better visibility (updated from black background with green text). The console allows developers to monitor boot process and diagnose servicemanager deadlock issues. Additionally, the splash screen includes auto-clicking buttons that cycle through Stop SM → Start SM operations every 1 second for automated testing.
