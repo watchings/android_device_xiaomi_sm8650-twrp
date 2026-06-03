@@ -10,28 +10,31 @@ Patches are organized in a file hierarchy that mirrors the recovery source tree:
 patches/
 ├── data.cpp.patch                              # Password & config persistence to /persist
 ├── gui/
-│   ├── gui.cpp.patch                           # Input event handling during splash
+│   ├── gui.cpp.patch                           # Enhanced input event handling during splash (merged)
 │   └── theme/portrait_hdpi/
-│       ├── pages/settings.xml.patch            # Remove password restrictions
-│       └── splash.xml.patch                    # Debug splash screen
-├── gui.cpp.patch                               # (legacy - debug GUI customization)
-├── settings_about.xml.patch                    # (legacy - About page customization)
+│       └── pages/settings.xml.patch            # Remove password restrictions
+├── settings_about.xml.patch                    # About page customization
+├── splash.xml.patch                            # Debug splash screen
 ├── apply-patches.sh                            # Automatic patch application script
 └── README.md                                   # This file
 ```
 
 ## New Patches (Issue Fixes)
 
-### gui/gui.cpp.patch
+### gui/gui.cpp.patch (Merged Patch)
 **Problem**: Buttons (physical or touch screen) were not clickable during splash screen. Clicks made during splash were queued and only processed after the splash deadlock released.
 
-**Solution**: 
+**Solution** (merged from two previous patches):
 - Initializes event input system (ev_init) and input_handler **before** loading splash screen
-- Adds event processing loop during splash display with 100 iterations of 10ms each
-- Processes input events (input_handler.processInput) during splash to make buttons immediately responsive
-- Updates PageManager state to handle UI interactions
+- Moves input initialization to occur before splash loading (prevents servicemanager deadlock blocking)
+- Processes pending input events before loading splash screen
+- Adds event processing at multiple points: before loading, after loading, after selecting splash
+- Implements interactive splash screen loop with 3-second display duration (30 iterations @ 100ms each)
+- Continuously processes input events (input_handler.processInput) during splash at 10 FPS
+- Updates PageManager state and checks blank timer to handle UI interactions and power button
+- Renders and flips display continuously during splash to maintain visual feedback
 
-**Impact**: Buttons are now clickable immediately during splash screen display.
+**Impact**: Buttons are now clickable immediately during splash screen display, with continuous event processing to prevent blocking even if servicemanager deadlocks. The splash screen remains interactive for 3 seconds with proper rendering.
 
 ---
 
@@ -60,15 +63,12 @@ patches/
 
 ---
 
-## Legacy Patches
-
-### gui.cpp.patch
-Customizes the GUI initialization for debugging purposes.
+## UI Customization Patches
 
 ### settings_about.xml.patch
-Updates the About page with device-specific information.
+Updates the About page with device-specific credits.
 
-### splash.xml.patch (in root)
+### splash.xml.patch
 Customizes the splash screen layout with debug features including:
 - Interactive buttons to control servicemanager
 - Real-time console output display
