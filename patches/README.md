@@ -13,7 +13,8 @@ patches/
 │   ├── gui.cpp.patch                           # Enhanced input event handling during splash (merged)
 │   └── theme/portrait_hdpi/
 │       ├── pages/settings.xml.patch            # Remove password restrictions + device credits (merged)
-│       └── splash.xml.patch                    # Debug splash screen
+│       ├── splash.xml.patch                    # Debug splash screen
+│       └── splash_skip.patch                   # Completely skip the splash screen
 ├── apply-patches.sh                            # Automatic patch application script
 └── README.md                                   # This file
 ```
@@ -77,6 +78,17 @@ Customizes the splash screen layout with debug features including:
 - Interactive buttons to control servicemanager
 - Real-time console output display
 - Diagnostic tools for debugging crypto operations
+
+### gui/theme/portrait_hdpi/splash_skip.patch
+**Purpose**: Completely skip the splash screen by removing all visual elements.
+
+**Changes**:
+- Removes all image resources (splash logo and background)
+- Removes all text elements (OrangeFox and Recovery labels)
+- Removes all decorative fills and UI elements
+- Leaves only a minimal black background
+
+**Result**: The splash screen displays as a blank black screen with no visible content, effectively skipping the splash experience while still maintaining the required XML structure.
 
 ## Applying Patches
 
