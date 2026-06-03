@@ -1,12 +1,12 @@
 diff --git a/etc/init/servicemanager.rc b/etc/init/servicemanager.rc
-index 40ed84d..d1adae1 100644
+index 40ed84d..7c47e53 100644
 --- a/etc/init/servicemanager.rc
 +++ b/etc/init/servicemanager.rc
 @@ -1,5 +1,7 @@
 -on init
 -    start servicemanager
-+# Disabled auto-start to prevent deadlock with crypto services
-+# servicemanager will be started on-demand when needed
++# DO NOT auto-start servicemanager in recovery to prevent crypto deadlock
++# servicemanager can be started manually via splash screen buttons if needed
 +# on init
 +#     start servicemanager
  
