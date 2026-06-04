@@ -1,0 +1,11 @@
+diff --git a/recovery_ui/default_device.cpp b/recovery_ui/default_device.cpp
+index 4db461a..2dd1630 100644
+--- a/recovery_ui/default_device.cpp
++++ b/recovery_ui/default_device.cpp
+@@ -18,5 +18,5 @@
+ #include "recovery_ui/screen_ui.h"
+ 
+ Device* make_device() {
+-  return new Device(new ScreenRecoveryUI);
++  return new Device(new ScreenRecoveryUI(true));
+ }

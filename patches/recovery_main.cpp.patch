@@ -1,0 +1,35 @@
+diff --git a/recovery_main.cpp b/recovery_main.cpp
+index 9a358ab..5a3f2d6 100644
+--- a/recovery_main.cpp
++++ b/recovery_main.cpp
+@@ -440,9 +440,10 @@ int main(int argc, char** argv) {
+     device->RemoveMenuItemForAction(Device::WIPE_CACHE);
+   }
+ 
+-  if (!android::base::GetBoolProperty("ro.boot.dynamic_partitions", false)) {
+-    device->RemoveMenuItemForAction(Device::ENTER_FASTBOOT);
+-  }
++  // Always allow ENTER_FASTBOOT regardless of dynamic partitions
++  // if (!android::base::GetBoolProperty("ro.boot.dynamic_partitions", false)) {
++  //   device->RemoveMenuItemForAction(Device::ENTER_FASTBOOT);
++  // }
+ 
+   if (!IsRoDebuggable()) {
+     device->RemoveMenuItemForAction(Device::ENTER_RESCUE);
+@@ -538,13 +539,9 @@ int main(int argc, char** argv) {
+       }
+ 
+       case Device::ENTER_FASTBOOT:
+-        if (android::fs_mgr::LogicalPartitionsMapped()) {
+-          ui->Print("Partitions may be mounted - rebooting to enter fastboot.");
+-          Reboot("fastboot");
+-        } else {
+-          LOG(INFO) << "Entering fastboot";
+-          fastboot = true;
+-        }
++        // Enter fastboot mode without rebooting
++        LOG(INFO) << "Entering fastboot";
++        fastboot = true;
+         break;
+ 
+       case Device::ENTER_RECOVERY:
