@@ -1,5 +1,5 @@
 diff --git a/gui/action.cpp b/gui/action.cpp
-index 42e3079..6a67377 100755
+index 42e3079..0cec02c 100755
 --- a/gui/action.cpp
 +++ b/gui/action.cpp
 @@ -203,6 +203,8 @@ GUIAction::GUIAction(xml_node <> *node):GUIObject(node)
@@ -11,18 +11,24 @@ index 42e3079..6a67377 100755
        ADD_ACTION(key);
        ADD_ACTION(page);
        ADD_ACTION(reload);
-@@ -697,6 +699,19 @@ int GUIAction::home(std::string arg __unused)
+@@ -697,6 +699,25 @@ int GUIAction::home(std::string arg __unused)
    return 0;
  }
  
 +int GUIAction::openfox(std::string arg __unused)
 +{
-+  gui_changePage("main");
++  PartitionManager.UnMount_Main_Partitions();
++  PartitionManager.Setup_Fstab_Partitions(true);
++  if (DataManager::GetIntValue("fox_use_pass") == 1)
++    gui_changePage("password_enter");
++  else
++    gui_changePage("main");
 +  return 0;
 +}
 +
 +int GUIAction::gotofastbootd(std::string arg __unused)
 +{
++  PartitionManager.UnMount_Main_Partitions();
 +  property_set("ro.orangefox.fastbootd", "1");
 +  gui_changePage("fastboot");
 +  return 0;

@@ -1,0 +1,43 @@
+diff --git a/twrp.cpp b/twrp.cpp
+index c9fdc57..343eb1a 100644
+--- a/twrp.cpp
++++ b/twrp.cpp
+@@ -621,35 +621,11 @@ int main(int argc, char **argv) {
+ 	twrpAdbBuFifo *adb_bu_fifo = new twrpAdbBuFifo();
+ 	TWFunc::Clear_Bootloader_Message();
+ 
+-	if (startup.Get_Fastboot_Mode()) {
+-		process_fastbootd_mode();
+-		delete adb_bu_fifo;
+-		TWFunc::Update_Intent_File(startup.Get_Intent());
+-		reboot();
+-		return 0;
+-	} else {
+-		process_recovery_mode(adb_bu_fifo, startup.Should_Skip_Decryption());
+-	}
+-#ifndef FOX_ALLOW_EARLY_SETTINGS_LOAD
+-	// Language
+-	PageManager::LoadLanguage(DataManager::GetStrValue("tw_language"));
+-	GUIConsole::Translate_Now();
+-#endif
+-	// Fox extra setup
+-  	TWFunc::Setup_Verity_Forced_Encryption();
+-
+-	// Launch the main GUI
+-	if (Fox_CheckReload_Themes()) {
+-		//[f/d] Start UI using reapply_settings page (executed on recovery startup)
+-		DataManager::SetValue("of_reload_back", "main");
+-		PageManager::RequestReload();
+-		gui_startPage("reapply_settings", 1, 0);
+-	} else gui_start();
+-
++	// Always start in fastbootd mode; the "Open OrangeFox" button switches
++	// the GUI to the recovery main view without rebooting.
++	process_fastbootd_mode();
+ 	delete adb_bu_fifo;
+ 	TWFunc::Update_Intent_File(startup.Get_Intent());
+-
+ 	reboot();
+-
+ 	return 0;
+ }
