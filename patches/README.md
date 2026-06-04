@@ -20,11 +20,47 @@ patches/
 │   └── theme/portrait_hdpi/
 │       ├── pages/settings.xml.patch            # Remove password restrictions + device credits (merged)
 │       └── splash.xml.patch                    # Debug splash screen
+├── recovery_main.cpp.patch                     # Fastbootd integration without reboot
+├── recovery_ui/
+│   └── default_device.cpp.patch                # Scrollable recovery menu
+├── recovery_utils/
+│   └── battery_utils.cpp.patch                 # Fix battery service blocking
 ├── apply-patches.sh                            # Automatic patch application script
+├── FASTBOOTD_INTEGRATION.md                    # Documentation for fastbootd patches
 └── README.md                                   # This file
 ```
 
 ## New Patches (Issue Fixes)
+
+---
+
+### recovery_main.cpp.patch & recovery_ui/default_device.cpp.patch (Fastbootd Integration)
+**Problem**: Users needed to reboot the device to switch between recovery and fastbootd modes. Additionally, the "Enter fastboot" menu option was hidden on devices without dynamic partitions support, and long menus could extend beyond screen limits making some options inaccessible.
+
+**Solution** (see FASTBOOTD_INTEGRATION.md for full details):
+1. **Scrollable Menu** (recovery_ui/default_device.cpp.patch):
+   - Enables scrollable menu mode by passing `true` to ScreenRecoveryUI constructor
+   - Allows scrolling through long menus using volume keys
+   - Ensures all menu options remain accessible regardless of screen size
+
+2. **Always Show Fastboot Option** (recovery_main.cpp.patch):
+   - Comments out the conditional removal of ENTER_FASTBOOT menu item
+   - Previously only visible when `ro.boot.dynamic_partitions` was true
+   - Now always available in recovery menu
+
+3. **Direct Mode Switching** (recovery_main.cpp.patch):
+   - Removes the logical partitions check that forced a reboot when entering fastbootd
+   - Enables instant switching between recovery ↔ fastbootd without rebooting
+   - Main loop stays alive and changes UI mode by toggling `fastboot` flag
+
+**Impact**: 
+- Users can instantly switch between recovery and fastbootd modes without rebooting
+- "Enter fastboot" option always visible in recovery menu
+- "Enter recovery" option available in fastbootd menu (already implemented)
+- All menu options accessible on any screen size via scrolling
+- Faster workflow for advanced users performing flashing operations
+
+---
 
 ### recovery_utils/0001-fix-battery-service-blocking.patch
 **Problem**: Recovery stuck at splash screen when `TW_INCLUDE_CRYPTO := true` is set. Root cause analysis:
@@ -168,4 +204,6 @@ The script:
 
 3. **Encrypted Data Configuration**: Fox now mounts /persist and stores/reads configs and passwords from `/persist/Fox` when data decryption fails, instead of being limited to /data/.fox or /sdcard/.fox. The restriction preventing password changes when data is not unlocked has been removed - passwords are now stored and read from /persist in this scenario.
 
-4. **Debugging Support**: The splash screen now displays dmesg kernel & init logs in real-time via a console with **white background and black text** for better visibility (updated from black background with green text). The console allows developers to monitor boot process and diagnose servicemanager deadlock issues. Additionally, the splash screen includes auto-clicking buttons that cycle through Stop SM → Start SM operations every 1 second for automated testing.
+4. **Fastbootd Integration (NEW)**: Users can now instantly switch between recovery and fastbootd modes without rebooting the device. The "Enter fastboot" option is always visible in the recovery menu regardless of dynamic partitions support. The recovery menu is now scrollable to ensure all options are accessible on any screen size. See FASTBOOTD_INTEGRATION.md for technical details.
+
+5. **Debugging Support**: The splash screen now displays dmesg kernel & init logs in real-time via a console with **white background and black text** for better visibility (updated from black background with green text). The console allows developers to monitor boot process and diagnose servicemanager deadlock issues. Additionally, the splash screen includes auto-clicking buttons that cycle through Stop SM → Start SM operations every 1 second for automated testing.
