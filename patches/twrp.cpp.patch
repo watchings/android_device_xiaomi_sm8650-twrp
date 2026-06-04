@@ -1,79 +1,15 @@
 diff --git a/twrp.cpp b/twrp.cpp
-index c9fdc57..93ae701 100644
+index c9fdc57..a8bb40a 100644
 --- a/twrp.cpp
 +++ b/twrp.cpp
-@@ -115,9 +115,8 @@ static void Decrypt_Page(bool SkipDecryption, bool datamedia) {
+@@ -115,10 +115,6 @@ static void Decrypt_Page(bool SkipDecryption, bool datamedia) {
  static void process_fastbootd_mode() {
  		LOGINFO("starting fastboot\n");
  
 -		if (android::base::GetBoolProperty("ro.boot.dynamic_partitions", false)) {
 -			PartitionManager.Unmap_Super_Devices();
 -		}
-+		// Do not unmap super devices: we want dynamic partitions to remain
-+		// accessible in the mount/MTP submenu while the fastbootd UI is shown.
- 
+-
  #ifdef AB_OTA_UPDATER
  		DataManager::SetValue("tw_active_slot", PartitionManager.Get_Active_Slot_Display());
-@@ -536,7 +535,9 @@ int main(int argc, char **argv) {
- 		fstab_filename = "/etc/recovery.fstab";
- 	}
- 	printf("=> Processing %s\n", fstab_filename.c_str());
--	if (!PartitionManager.Process_Fstab(fstab_filename, 1, !startup.Get_Fastboot_Mode())) {
-+	// Always process fstab in recovery mode so all partitions (including those
-+	// behind the vendor fstab) are discovered, even when the fastbootd UI is shown.
-+	if (!PartitionManager.Process_Fstab(fstab_filename, 1, true)) {
- 		LOGERR("Failing out of recovery due to problem with fstab.\n");
- 		return -1;
- 	}
-@@ -548,7 +549,8 @@ int main(int argc, char **argv) {
- 	printf("Starting the UI...\n");
- 	gui_init();
- 
--	if (!startup.Get_Fastboot_Mode()) PartitionManager.Setup_Fstab_Partitions(true);
-+	// Always set up fstab partitions so the mount/MTP list is fully populated.
-+	PartitionManager.Setup_Fstab_Partitions(true);
- 
- 	// Load up all the resources
- 	gui_loadResources();
-@@ -621,35 +623,15 @@ int main(int argc, char **argv) {
- 	twrpAdbBuFifo *adb_bu_fifo = new twrpAdbBuFifo();
- 	TWFunc::Clear_Bootloader_Message();
- 
--	if (startup.Get_Fastboot_Mode()) {
--		process_fastbootd_mode();
--		delete adb_bu_fifo;
--		TWFunc::Update_Intent_File(startup.Get_Intent());
--		reboot();
--		return 0;
--	} else {
--		process_recovery_mode(adb_bu_fifo, startup.Should_Skip_Decryption());
-+	// Always start in fastbootd mode to avoid the recovery splash-screen hang.
-+	// When started as "adb reboot recovery" (no --fastboot flag) enable ADB so
-+	// the "Start ADB" / "Start Fastboot" toggle button is visible on the page.
-+	if (!startup.Get_Fastboot_Mode()) {
-+		DataManager::SetValue("tw_enable_adb", 1);
- 	}
--#ifndef FOX_ALLOW_EARLY_SETTINGS_LOAD
--	// Language
--	PageManager::LoadLanguage(DataManager::GetStrValue("tw_language"));
--	GUIConsole::Translate_Now();
--#endif
--	// Fox extra setup
--  	TWFunc::Setup_Verity_Forced_Encryption();
--
--	// Launch the main GUI
--	if (Fox_CheckReload_Themes()) {
--		//[f/d] Start UI using reapply_settings page (executed on recovery startup)
--		DataManager::SetValue("of_reload_back", "main");
--		PageManager::RequestReload();
--		gui_startPage("reapply_settings", 1, 0);
--	} else gui_start();
--
-+	process_fastbootd_mode();
- 	delete adb_bu_fifo;
- 	TWFunc::Update_Intent_File(startup.Get_Intent());
--
- 	reboot();
--
- 	return 0;
- }
+ #endif
