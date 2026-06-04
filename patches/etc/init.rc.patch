@@ -1,0 +1,32 @@
+diff --git a/etc/init.rc b/etc/init.rc
+index 6013e1d..cf846e2 100644
+--- a/etc/init.rc
++++ b/etc/init.rc
+@@ -214,9 +214,21 @@ on property:sys.usb.config=adb && property:sys.usb.ffs.ready=1 && property:sys.u
+     write /config/usb_gadget/g1/UDC ${sys.usb.controller}
+     setprop sys.usb.state ${sys.usb.config}
+ 
+-on property:sys.usb.config=fastboot && property:sys.usb.ffs.ready=1 && property:sys.usb.configfs=1
+-    write /config/usb_gadget/g1/idProduct 0x${ro.recovery.usb.fastboot.pid}
+-    write /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration "fastboot"
+-    symlink /config/usb_gadget/g1/functions/ffs.fastboot /config/usb_gadget/g1/configs/b.1/f1
+-    write /config/usb_gadget/g1/UDC ${sys.usb.controller}
+-    setprop sys.usb.state ${sys.usb.config}
++
++# Start service managers and HAL services needed for FBE decryption.
++# These are triggered from twrp.cpp before showing the decrypt page.
++# Service managers are disabled at boot to prevent crypto deadlock; they
++# are started here explicitly only when decryption is about to begin.
++on property:twrp.crypto.init=1
++    start vndservicemanager
++    start hwservicemanager
++    start servicemanager
++
++# Restart vendor HAL services (keymint, gatekeeper) so they can register
++# with the now-running service managers after their crash-backoff state.
++on property:twrp.crypto.init=2
++    class_restart hal
++
++# Start keystore2 after HAL services have had time to register.
++on property:twrp.crypto.init=3
++    start keystore2
