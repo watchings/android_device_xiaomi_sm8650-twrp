@@ -1,0 +1,56 @@
+diff --git a/gui/action.cpp b/gui/action.cpp
+index 42e3079..01225e7 100755
+--- a/gui/action.cpp
++++ b/gui/action.cpp
+@@ -203,6 +203,8 @@ GUIAction::GUIAction(xml_node <> *node):GUIObject(node)
+       // These actions will be run in the caller's thread
+       ADD_ACTION(reboot);
+       ADD_ACTION(home);
++      ADD_ACTION(openfox);
++      ADD_ACTION(gotofastbootd);
+       ADD_ACTION(key);
+       ADD_ACTION(page);
+       ADD_ACTION(reload);
+@@ -697,6 +699,42 @@ int GUIAction::home(std::string arg __unused)
+   return 0;
+ }
+ 
++int GUIAction::openfox(std::string arg __unused)
++{
++  // Partition setup is done at startup; just unmount system/vendor/product
++  // so recovery can work with them, then switch to the recovery main page.
++  // Do NOT call Setup_Fstab_Partitions here – it blocks the UI thread and
++  // causes an immediate hang when called from the fastbootd page.
++  PartitionManager.UnMount_Main_Partitions();
++
++  // Auto-mount /persist to load saved configuration (non-blocking: skip on failure).
++  if (PartitionManager.Mount_By_Path("/persist", false)) {
++    DataManager::LoadPersistValues();
++    DataManager::FindPasswordBackup();
++  }
++
++  if (DataManager::GetIntValue("fox_use_pass") == 1)
++    gui_changePage("password_enter");
++  else
++    gui_changePage("main");
++  return 0;
++}
++
++int GUIAction::gotofastbootd(std::string arg __unused)
++{
++  PartitionManager.UnMount_Main_Partitions();
++  // Switch USB from ADB to fastboot mode so the host can discover the device
++  // via "fastboot devices". configfs is already 1 from device init.
++  android::base::SetProperty("sys.usb.config", "none");
++  usleep(500000); // 500ms: allow USB to disconnect cleanly
++  android::base::SetProperty("sys.usb.config", "fastboot");
++  DataManager::SetValue("tw_enable_adb", 0);
++  DataManager::SetValue("tw_enable_fastboot", 1);
++  property_set("ro.orangefox.fastbootd", "1");
++  gui_changePage("fastboot");
++  return 0;
++}
++
+ int GUIAction::key(std::string arg)
+ {
+   const int key = getKeyByName(arg);

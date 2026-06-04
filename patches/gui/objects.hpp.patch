@@ -1,0 +1,13 @@
+diff --git a/gui/objects.hpp b/gui/objects.hpp
+index bdf35bd..a3f4b53 100644
+--- a/gui/objects.hpp
++++ b/gui/objects.hpp
+@@ -363,6 +363,8 @@ protected:
+ 	int home(std::string arg);
+ 	int key(std::string arg);
+ 	int page(std::string arg);
++int openfox(std::string arg);
++int gotofastbootd(std::string arg);
+ 	int reload(std::string arg);
+ 	int check_and_reload(std::string arg);
+ 	int readBackup(std::string arg);

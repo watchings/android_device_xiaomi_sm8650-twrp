@@ -1,0 +1,49 @@
+diff --git a/twrp.cpp b/twrp.cpp
+index c9fdc57..0e4d68f 100644
+--- a/twrp.cpp
++++ b/twrp.cpp
+@@ -115,14 +115,18 @@ static void Decrypt_Page(bool SkipDecryption, bool datamedia) {
+ static void process_fastbootd_mode() {
+ 		LOGINFO("starting fastboot\n");
+ 
+-		if (android::base::GetBoolProperty("ro.boot.dynamic_partitions", false)) {
+-			PartitionManager.Unmap_Super_Devices();
+-		}
+-
+ #ifdef AB_OTA_UPDATER
+ 		DataManager::SetValue("tw_active_slot", PartitionManager.Get_Active_Slot_Display());
+ #endif
+ 
++		// Ensure USB is in fastboot mode (startupArgs may have set it, but confirm).
++		// If already in fastboot mode, avoid a needless USB disconnect cycle.
++		if (android::base::GetProperty("sys.usb.config", "") != "fastboot") {
++			android::base::SetProperty("sys.usb.config", "none");
++			usleep(500000);
++			android::base::SetProperty("sys.usb.config", "fastboot");
++		}
++
+ 		gui_msg(Msg("fastboot_console_msg=Entered Fastboot mode..."));
+ 		property_set("ro.orangefox.fastbootd", "1");
+ 		property_set("ro.boot.verifiedbootstate", "orange");
+@@ -250,6 +254,21 @@ static void process_recovery_mode(twrpAdbBuFifo* adb_bu_fifo, bool skip_decrypti
+ 
+ #ifdef TW_INCLUDE_CRYPTO
+ 	android::keystore::copySqliteDb();
++
++	// Start service managers and vendor HAL services (keymint, gatekeeper)
++	// needed for FBE/ICE wrapped-key decryption on SM8650.  They were
++	// disabled at boot to prevent a servicemanager deadlock; bring them up
++	// now, just before the decrypt page is shown, so the user has time to
++	// enter their credentials while the services are initialising.
++	if (DataManager::GetIntValue(TW_IS_ENCRYPTED) != 0 && !skip_decryption) {
++		LOGINFO("Starting service managers and HAL services for FBE decryption...\n");
++		android::base::SetProperty("twrp.crypto.init", "1");
++		sleep(2); // wait for vndservicemanager / hwservicemanager / servicemanager
++		android::base::SetProperty("twrp.crypto.init", "2");
++		sleep(2); // wait for HAL services (keymint, gatekeeper) to re-register
++		android::base::SetProperty("twrp.crypto.init", "3");
++		sleep(1); // wait for keystore2 to start
++	}
+ #endif
+ 	Decrypt_Page(skip_decryption, datamedia);
+ 
