@@ -1,0 +1,17 @@
+diff --git a/gui/theme/portrait_hdpi/resources/vars.xml b/gui/theme/portrait_hdpi/resources/vars.xml
+index 7dcffc2..5742c15 100644
+--- a/gui/theme/portrait_hdpi/resources/vars.xml
++++ b/gui/theme/portrait_hdpi/resources/vars.xml
+@@ -386,9 +386,9 @@
+ 		<variable name="battery_2_12_x" value="900-%status_indent_right%"/>
+ 		<variable name="battery_2_24_x" value="960-%status_indent_right%"/>
+ 
+-		<variable name="battery_y" value="%status_info_y%+6"/>
+-		<variable name="battery_2_y" value="%status_info_y%+10"/>
+-		<variable name="battery_circle_y" value="%status_info_y%+4"/>
++		<variable name="battery_y" value="%status_info_y%-2"/>
++		<variable name="battery_2_y" value="%status_info_y%+4"/>
++		<variable name="battery_circle_y" value="%status_info_y%-4"/>
+ 
+ 		<!-- File list -->
+ 		<variable name="fileselector_width" value="%screen_w%"/>

@@ -1,8 +1,43 @@
 diff --git a/data.cpp b/data.cpp
-index 7ca8d86..723e8be 100755
+index 7ca8d86..1ad5278 100755
 --- a/data.cpp
 +++ b/data.cpp
-@@ -1639,11 +1639,22 @@ void DataManager::ReadSettingsFile(void)
+@@ -802,7 +802,7 @@ void DataManager::SetDefaultValues()
+     	mConst.SetValue("fox_use_nano_editor", "0");
+   #endif
+ 
+-  int of_status_placement = (atoi(OF_STATUS_H) / 2) - 28;
++  int of_status_placement = (atoi(OF_STATUS_H) / 2) - 20;
+   int of_center_y = atoi(OF_SCREEN_H) / 2;
+   
+   mConst.SetValue(OF_STATUS_PLACEMENT_S, of_status_placement);
+@@ -1628,22 +1628,47 @@ void DataManager::ReadSettingsFile(void)
+   // Load up the values for TWRP - Sleep to let the card be ready
+   char mkdir_path[255], settings_file[255];
+ #ifndef FOX_SETTINGS_ROOT_DIRECTORY
++  // Prefer /persist/Fox as primary settings storage so that all preferences and
++  // customizations are retained without requiring /data to be mounted or decrypted.
++  #ifndef OF_DEVICE_WITHOUT_PERSIST
++  {
++    std::string persist_fox = "/persist/Fox";
++    if (PartitionManager.Mount_By_Path("/persist", false)) {
++      if (!TWFunc::Path_Exists(persist_fox))
++        TWFunc::Create_Dir_Recursive(persist_fox.c_str(), 0755, 0, 0);
++      SetValue("tw_settings_path", persist_fox);
++      LOGINFO("ReadSettingsFile: using /persist/Fox as primary settings storage\n");
++    }
++  }
++  #endif
++
+   int is_enc, has_data_media;
+ 
+   GetValue(TW_IS_ENCRYPTED, is_enc);
+   GetValue(TW_HAS_DATA_MEDIA, has_data_media);
+ 
+-  // if decryption fails, try to load/save some settings to /data/recovery/Fox/
++  // if decryption fails, ensure /persist/Fox is used for settings
+   if (is_enc == 1 && has_data_media == 1 && (TWFunc::Path_Exists("/data/unencrypted/key/version") || GetIntValue(TW_IS_FBE) == 1)) {
+ 	// only do this after TWFunc::OrangeFox_Startup() - don't do it before OpenrecoveryScript execution (eg, for OTAs)
  	if (GetStrValue("fox_startup_executed") == "1") {
  		static int dcrpfail_count=0;
  		TWFunc::Fox_Property_Set("of_decryption_failed", "true");
