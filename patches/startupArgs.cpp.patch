@@ -1,0 +1,27 @@
+diff --git a/startupArgs.cpp b/startupArgs.cpp
+index 058bc40..eba0fff 100755
+--- a/startupArgs.cpp
++++ b/startupArgs.cpp
+@@ -31,6 +31,22 @@ void startupArgs::parse(int *argc, char ***argv) {
+ 			break;
+ 	}
+ 	printf("\n");
++
++	// Default to fastbootd mode unless explicit recovery commands were queued.
++	// This ensures every startup (including "reboot recovery") goes directly to
++	// fastbootd, avoiding the servicemanager-dependent code paths that cause the
++	// splash screen hang on devices without servicemanager.
++	if (!fastboot_mode && !TWFunc::Path_Exists(SCRIPT_FILE_TMP)) {
++		LOGINFO("No recovery commands queued - defaulting to fastbootd mode\n");
++		fastboot_mode = true;
++		android::base::SetProperty("sys.usb.config", "none");
++		android::base::SetProperty("sys.usb.configfs", "0");
++		sleep(1);
++		android::base::SetProperty("sys.usb.configfs", "1");
++		android::base::SetProperty("sys.usb.config", "fastboot");
++		DataManager::SetValue("tw_enable_adb", 0);
++		DataManager::SetValue("tw_enable_fastboot", 1);
++	}
+ }
+ 
+ bool startupArgs::processRecoveryArgs(std::vector<std::string> args, int index) {
