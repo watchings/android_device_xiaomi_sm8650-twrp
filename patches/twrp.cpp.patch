@@ -1,8 +1,8 @@
 diff --git a/twrp.cpp b/twrp.cpp
-index c9fdc57..a8bb40a 100644
+index c9fdc57..0d132d1 100644
 --- a/twrp.cpp
 +++ b/twrp.cpp
-@@ -115,10 +115,6 @@ static void Decrypt_Page(bool SkipDecryption, bool datamedia) {
+@@ -115,14 +115,18 @@ static void Decrypt_Page(bool SkipDecryption, bool datamedia) {
  static void process_fastbootd_mode() {
  		LOGINFO("starting fastboot\n");
  
@@ -13,3 +13,15 @@ index c9fdc57..a8bb40a 100644
  #ifdef AB_OTA_UPDATER
  		DataManager::SetValue("tw_active_slot", PartitionManager.Get_Active_Slot_Display());
  #endif
+ 
++		// Ensure USB is in fastboot mode (startupArgs may have set it, but confirm).
++		// If already in fastboot mode, avoid a needless USB disconnect cycle.
++		if (android::base::GetProperty("sys.usb.config", "") != "fastboot") {
++			android::base::SetProperty("sys.usb.config", "none");
++			usleep(500000);
++			android::base::SetProperty("sys.usb.config", "fastboot");
++		}
++
+ 		gui_msg(Msg("fastboot_console_msg=Entered Fastboot mode..."));
+ 		property_set("ro.orangefox.fastbootd", "1");
+ 		property_set("ro.boot.verifiedbootstate", "orange");
