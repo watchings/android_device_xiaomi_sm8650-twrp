@@ -1,62 +1,77 @@
 # Reboot Menu Enhancements
 
-This document describes the patches that add new buttons to the OrangeFox reboot menu.
+This document describes the patches that add new buttons to the OrangeFox reboot menu and modify
+startup behavior.
 
 ## Overview
 
-These patches add two new buttons to the reboot menu:
-1. **Open OrangeFox** - Returns to the OrangeFox main view WITHOUT rebooting the device
-2. **Goto Fastbootd** - Launches fastbootd mode WITHOUT rebooting the device
+These patches add two new buttons to the reboot menu and change the default startup mode:
+1. **Open OrangeFox** - Unmounts main partitions, re-initializes recovery fstab, checks the
+   OrangeFox password (if set), then navigates to the OrangeFox main view WITHOUT rebooting
+2. **Goto Fastbootd** - Unmounts main partitions and switches to the fastbootd view WITHOUT rebooting
+3. **Always Fastbootd startup** - Every boot starts directly in fastbootd mode; recovery GUI is
+   accessible via the "Open OrangeFox" button
 
 ## Modified Files
 
-The following files are modified by these patches:
-
 ### 1. gui/objects.hpp.patch
-Adds function declarations for the new action handlers:
-- `int openfox(std::string arg)` - Handler for returning to OrangeFox main view
-- `int gotofastbootd(std::string arg)` - Handler for launching fastbootd mode
+Adds member function declarations to the `GUIAction` class:
+- `int openfox(std::string arg)` - Handler for entering the OrangeFox recovery view
+- `int gotofastbootd(std::string arg)` - Handler for switching to fastbootd view
 
 ### 2. gui/action.cpp.patch
-Implements the action handlers and registers them:
-- Registers `openfox` and `gotofastbootd` actions in the action map
-- Implements `GUIAction::openfox()` - calls `gui_changePage("main")` to return to main view
-- Implements `GUIAction::gotofastbootd()` - sets fastbootd property and calls `gui_changePage("fastboot")`
+Implements and registers the action handlers:
+- Registers `openfox` and `gotofastbootd` with `ADD_ACTION`
+- `GUIAction::openfox()`:
+  1. Calls `PartitionManager.UnMount_Main_Partitions()` to unmount system/vendor/data
+  2. Calls `PartitionManager.Setup_Fstab_Partitions(true)` to re-initialize recovery-mode fstab
+  3. If `fox_use_pass == 1`, navigates to `password_enter` for OrangeFox password check;
+     otherwise navigates directly to `main`
+- `GUIAction::gotofastbootd()`:
+  1. Calls `PartitionManager.UnMount_Main_Partitions()` to unmount partitions
+  2. Sets `ro.orangefox.fastbootd` property to "1"
+  3. Navigates to the `fastboot` GUI page
 
 ### 3. gui/theme/portrait_hdpi/pages/reboot.xml.patch
 Adds the UI elements to the reboot menu:
-- Adds "Open OrangeFox" listitem with mobile_wrench icon
-- Adds "Goto Fastbootd" listitem with reboot_fastboot icon (shown only when fastboot mode is available)
+- "Open OrangeFox" listitem (mobile_wrench icon, always visible)
+- "Goto Fastbootd" listitem (reboot_fastboot icon, shown only when `tw_fastboot_mode=1`)
 
-## Technical Details
+### 4. twrp.cpp.patch
+Replaces the conditional startup logic with unconditional fastbootd startup:
+- Removes the `if (startup.Get_Fastboot_Mode())` branch
+- Always calls `process_fastbootd_mode()` on every boot (sets up USB fastboot, runs scripts,
+  starts the fastbootd GUI event loop)
+- Recovery functions are accessible via the "Open OrangeFox" button without rebooting
 
-### Open OrangeFox Button
-- **Function**: `openfox`
-- **Action**: Navigates to the main OrangeFox page using `gui_changePage("main")`
-- **Behavior**: Returns the user to the OrangeFox main menu without rebooting
-- **Icon**: mobile_wrench
+## Startup Flow
 
-### Goto Fastbootd Button
-- **Function**: `gotofastbootd`
-- **Action**: Sets `ro.orangefox.fastbootd` property to "1" and navigates to fastboot page
-- **Behavior**: Launches fastbootd mode without rebooting the device
-- **Icon**: reboot_fastboot
-- **Condition**: Only shown when `tw_fastboot_mode` is set to "1"
-
-## Testing
-
-All patches have been tested against `$RUNNER_TEMP/recovery` and apply cleanly:
-
-```bash
-cd $RUNNER_TEMP/recovery
-git apply --check patches/gui/objects.hpp.patch        # ✓ OK
-git apply --check patches/gui/action.cpp.patch         # ✓ OK
-git apply --check patches/gui/theme/portrait_hdpi/pages/reboot.xml.patch  # ✓ OK
+```
+Boot (any trigger: adb reboot recovery / adb reboot fastboot / power button)
+  └─> process_fastbootd_mode()
+        ├─ Unmap super devices (for dynamic partitions)
+        ├─ Set ro.orangefox.fastbootd=1
+        ├─ Run /system/bin/runatboot.sh, postfastboot.sh
+        └─ gui_startPage("fastboot", 1, 1)   ← event loop starts
+              ├─ [User clicks "Open OrangeFox"]
+              │     └─> openfox action:
+              │           UnMount_Main_Partitions()
+              │           Setup_Fstab_Partitions(true)
+              │           → password_enter (if fox_use_pass=1) → main
+              │           → main (if fox_use_pass=0)
+              └─ [User clicks "Goto Fastbootd"]
+                    └─> gotofastbootd action:
+                          UnMount_Main_Partitions()
+                          → fastboot page
 ```
 
 ## Application
 
-These patches are automatically applied by the `apply-patches.sh` script during the build process. The script discovers patches based on the file hierarchy and applies them in alphabetical order.
+Patches are automatically applied by `apply-patches.sh` during the build process:
+
+```bash
+./patches/apply-patches.sh /path/to/recovery /path/to/patches
+```
 
 ## File Hierarchy
 
@@ -69,16 +84,10 @@ patches/
 │       └── portrait_hdpi/
 │           └── pages/
 │               └── reboot.xml.patch
+└── twrp.cpp.patch
 ```
 
 ## Compatibility
 
-These patches are compatible with:
 - OrangeFox Recovery (fox_14.1 branch)
-- TWRP-based recoveries using similar GUI framework
-
-## Notes
-
-- The "Goto Fastbootd" button only appears when fastboot mode is available (`tw_fastboot_mode=1`)
-- Both buttons provide quick access to recovery features without the overhead of a full reboot
-- The patches maintain consistency with existing OrangeFox UI patterns and code style
+- TWRP-based recoveries using a similar GUI and partition manager framework
