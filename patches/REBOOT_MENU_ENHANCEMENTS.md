@@ -5,12 +5,12 @@ startup behavior.
 
 ## Overview
 
-These patches add two new buttons to the reboot menu and change the default startup mode:
+These patches add two new buttons to the reboot menu and fix the fastbootd startup hang:
 1. **Open OrangeFox** - Unmounts main partitions, re-initializes recovery fstab, checks the
    OrangeFox password (if set), then navigates to the OrangeFox main view WITHOUT rebooting
 2. **Goto Fastbootd** - Unmounts main partitions and switches to the fastbootd view WITHOUT rebooting
-3. **Always Fastbootd startup** - Every boot starts directly in fastbootd mode; recovery GUI is
-   accessible via the "Open OrangeFox" button
+3. **Fix fastbootd splash hang** - Removes the `Unmap_Super_Devices()` call that caused the device
+   to hang at the splash screen when booting via `adb reboot fastboot` on VAB devices
 
 ## Modified Files
 
@@ -38,20 +38,22 @@ Adds the UI elements to the reboot menu:
 - "Goto Fastbootd" listitem (reboot_fastboot icon, shown only when `tw_fastboot_mode=1`)
 
 ### 4. twrp.cpp.patch
-Replaces the conditional startup logic with unconditional fastbootd startup:
-- Removes the `if (startup.Get_Fastboot_Mode())` branch
-- Always calls `process_fastbootd_mode()` on every boot (sets up USB fastboot, runs scripts,
-  starts the fastbootd GUI event loop)
-- Recovery functions are accessible via the "Open OrangeFox" button without rebooting
+Fixes the fastbootd splash screen hang on VAB (Virtual A/B) devices:
+- Removes the `Unmap_Super_Devices()` call from `process_fastbootd_mode()`
+- On sm8650 (VAB), dm-user COW partitions require userspace snapshotd to handle
+  `DM_DEV_REMOVE` ioctls; snapshotd is not running in recovery, so the call blocks
+  indefinitely while the splash screen remains visible
+- The recovery/fastbootd startup branching (`startup.Get_Fastboot_Mode()`) is preserved
+  unchanged; normal `adb reboot recovery` continues to enter recovery mode as expected
 
 ## Startup Flow
 
 ```
-Boot (any trigger: adb reboot recovery / adb reboot fastboot / power button)
+adb reboot fastboot (BCB boot-fastboot → --fastboot arg)
   └─> process_fastbootd_mode()
-        ├─ Unmap super devices (for dynamic partitions)
-        ├─ Set ro.orangefox.fastbootd=1
-        ├─ Run /system/bin/runatboot.sh, postfastboot.sh
+        ├─ (Unmap_Super_Devices removed — was the hang cause)
+        ├─ Sets ro.orangefox.fastbootd=1
+        ├─ Runs /system/bin/runatboot.sh, postfastboot.sh
         └─ gui_startPage("fastboot", 1, 1)   ← event loop starts
               ├─ [User clicks "Open OrangeFox"]
               │     └─> openfox action:
@@ -63,6 +65,9 @@ Boot (any trigger: adb reboot recovery / adb reboot fastboot / power button)
                     └─> gotofastbootd action:
                           UnMount_Main_Partitions()
                           → fastboot page
+
+adb reboot recovery (or power button)
+  └─> process_recovery_mode()   ← unchanged, normal recovery flow
 ```
 
 ## Application
