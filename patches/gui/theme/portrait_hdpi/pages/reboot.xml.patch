@@ -1,0 +1,20 @@
+diff --git a/gui/theme/portrait_hdpi/pages/reboot.xml b/gui/theme/portrait_hdpi/pages/reboot.xml
+index 95c1fd2..7e49864 100644
+--- a/gui/theme/portrait_hdpi/pages/reboot.xml
++++ b/gui/theme/portrait_hdpi/pages/reboot.xml
+@@ -45,6 +45,15 @@
+ 					<action function="set">tw_action_param=edl</action>
+ 					<action function="page">rebootcheckoverlay</action>
+ 				</listitem>
++				<listitem name="Open OrangeFox">
++					<icon res="mobile_wrench"/>
++					<action function="openfox"/>
++				</listitem>
++				<listitem name="Goto Fastbootd">
++					<condition var1="tw_fastboot_mode" var2="1"/>
++					<icon res="reboot_fastboot"/>
++					<action function="gotofastbootd"/>
++				</listitem>
+ 			</listbox>
+ 
+ 		
